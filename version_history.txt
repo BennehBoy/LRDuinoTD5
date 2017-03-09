@@ -1,0 +1,114 @@
+Version 0.03
+Forked project from LRDuino (ELM327 based) to LRDuinoTD5
+Removed ELM327 code
+Added TD5 opencomm ISO14230-1 code
+
+Version 0.02
+Thinned down the inclinometer animation frames to save memory
+Added datalogging to SD (works but requires a GPIO pin - will be adding CS multiplexing soon to free this up)
+Enable/disable & Warning Menus now work
+Added 'Connect to ECU' option to initialise OBD if it failed at startup time
+Any OBD read errors disable all OBD sensors (re-enable menu items become disabled).
+5s Menu timeout
+
+Version 0.01
+Renumbered versioning - oops, should've thought longer about this in the first place.
+Included Arduino Menu 3.0 system.
+Removed some unused OBD sensors.
+Added 'Buttons' library & updated user interaction.
+
+Version 0.99
+Functions renamed
+Main loop altered to update certain sensors readings based on frequency of change, this speeds up the main loop when OBD is enabled.
+Added left & right rotations
+Changed some of the pinouts
+Fixed bug where display rotation broke if there were less sensors active than screens.
+Fixed draw position of sensor images in drawbig
+Added pressure sensor code
+
+Version 0.98
+Various bugfixes
+
+Version 0.97
+OBD Support added - at this stage it is using a modified version of -> https://github.com/irvined1982/arduino-ELM327  Main changes are to filter out all non alpha chars & the ELM prompt '>' to allow interfacing with obdsim running on a windows xp virtual machine in virtualbox via a bluetooth com port.
+Large font OBD sensor drawing fucntion added for RPM, MPH
+
+Version 0.96
+Moved MAX31586 & SSD1306 devices to shared HW SPI bus. This incorporates several pin wiring changes.
+Ditched Adafruit_31586 library in favour of custom code
+Now uses 8 OLED displays
+Prelimary bluetooth code included & OBD2 sensors using ELM 327 library.
+OBD sensors added to sensor structure - this will expand to cover most common PID's
+Pins are now initialised to correct state and input/ouput definition.
+Added units 'rpm' & 'mph'
+Various formatting changes for readability
+
+Version 0.95
+Added compass graphic
+Added sensor pairing
+Consolidated display drawing to 1 function, this means that each sensor occupies 1 screen with a graph unless it is 'paired'
+Updated posrot and active sensor counting functions to account for pairing
+functionised test drawing.
+
+Version 0.94
+Removed Arduino nano/uno support - they don't have enough ram/gpio (version 0.93 will be kept in a 'legacy' folder for anyone wanting to hack against uno/nano)
+Added magnetometer support & a compass graphic HMC5883
+Moved all the sensor config into an array of structs
+Moved the audible warning code out of the display routine - this way alarms not on screen can be heard (at a higher beep rate)
+Expanded to 20 sensors (will define the most standard OBD PIDs here)
+Added pitch meter and associated animation gfx
+
+Version 0.93
+STM32 support added
+Pins abdstracted to defines
+Added 'DIVISOR' definition - STM32 ADC is 12 bit so returns values 0-4095 whereas Nano/Uno is 10 bit with values 0-1023.  Sensor reading fucntions updated to use this.
+
+Version 0.92
+Moved barchart drawing into a function, this can be called from any of the display drawing fuctions with a reference to the OLED object
+Made it so that sensors can be enabled/disabled at compile time - new array senseactive[]  The posrot function now populates based on active sensors only.
+
+Version 0.91
+Changed font used for values & errors to FreeSansBoldOblique12pt7b - nice TTF font, code amended to reflect baseline change in this font from standard.
+Tidied some repetetive fault checking code nto a helper function.
+Changed some of the comments to hopefully make the code easier to follow.
+Fixed a bug where warning faulted sensors were displaying warning values - not really necessary to do this.
+Fixed a bug where display1 was drawing the sensor twice - meant that warnings/faults would not animate.
+
+Version 0.90
+Moved gfx to seperate .h file
+Added animation to the roll icon
+Added low warning values and code
+
+Version 0.89
+Overhauled the display code to look much prettier
+Reduced some memory usage by breaking out some of the display code into functions
+
+Version 0.88
+Version history broken out into seperate file
+Added Sensor data for the adxl345 to the array
+Added a graphic for roll
+Added a graphic for coolant level
+Updated the rotation code so that all sensors now rotate around the displays (1 extra OLED would mean all 7 could be shown at once)
+Updated the 'units' code so that boolean types (LOW, OK for coolant level)  degrees are now catered for * not happy with this yet, think it needs some sensor description in the array of sensors
+Changed from square() function to sq() - compatability with STM32
+
+Version 0.87
+Switched to Fabo ADXL345 library, this saves 1766 bytes of Progmem, and 223 bytes of Dyn mem!
+
+Version 0.86
+Decoupled sensor input pins from array index - read functions now need to also be passed the array index to store data
+Moved some pins around to accomodate i2c on a4,a5
+Added initial support for ADXL345 Accelerometer
+
+Version 0.85
+Fault signals now reset max recorded values to the minimum of the scalerange
+Fixed bug with screen rotation - it's not a good idea values outside of the bounds of and array! "if (faultWARN(6)==1)"
+Fixed bug analogue inputs need to correspond to their analogue pin, this is because the code implicitly expects them on those...
+
+Version 0.84
+Added low coolant warning, &assoicated variables & functions - shows on display1 only
+fixed bug in doWarnings() where we were directly referencing display 1 & 3 rather than passing in a reference to the display that we wanted to draw on
+reverted scalerange change to int back to float - graph was drawing only at left
+
+Version 0.83
+Initial upload to github
