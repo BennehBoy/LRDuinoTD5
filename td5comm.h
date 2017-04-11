@@ -78,8 +78,6 @@ public:
 
   boolean connectToEcu(boolean showBar = true);
   void disconnectFromEcu();
-  void instrumentCycle();
-  void fuellingCycle();
   int getFaultCodes();
   int getFaultCode(int index);
   int getFaultCodesCount(){return faultCodesCount;};

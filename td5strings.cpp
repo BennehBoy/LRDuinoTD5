@@ -19,38 +19,6 @@ Td5strings.cpp -
 #include <Arduino.h>
 #include "td5strings.h"
 
-// Fuelling params
-const char fuelling_param_0[] = "Speed (km/h)";
-const char fuelling_param_1[] = "Eng.spd.(rpm)";
-const char fuelling_param_2[] = "Battery (V)";
-const char fuelling_param_3[] = "Man.pres.(KPa)";
-const char fuelling_param_4[] = "Amb.pres.(KPa)";
-const char fuelling_param_5[] = "MAF (kg/Hr)";
-const char fuelling_param_6[] = "Thr.pot 1 (V)";
-const char fuelling_param_7[] = "Thr.pot 2 (V)";
-const char fuelling_param_8[] = "Thr.pot 3 (V)";
-const char fuelling_param_9[] = "Thr.supp. (V)";
-const char fuelling_param_10[] = "EGR mod.(%)";
-const char fuelling_param_11[] = "EGR inl.(%)";
-const char fuelling_param_12[] = "TWG (%)";
-const char fuelling_param_13[] = "Idle spd.(rpm)";
-const char fuelling_param_14[] = "Coolant t.(C)";
-const char fuelling_param_15[] = "Air inl.t.(C)";
-const char fuelling_param_16[] = "Fuel t. (C)";
-const char fuelling_param_17[] = "Inj.bal.1";
-const char fuelling_param_18[] = "Inj.bal.2";
-const char fuelling_param_19[] = "Inj.bal.3";
-const char fuelling_param_20[] = "Inj.bal.4";
-const char fuelling_param_21[] = "Inj.bal.5";
-const char *fuelling_params[] = { 
-  fuelling_param_0, fuelling_param_1, fuelling_param_2, fuelling_param_3, fuelling_param_4,
-  fuelling_param_5, fuelling_param_6, fuelling_param_7, fuelling_param_8, fuelling_param_9,
-  fuelling_param_10, fuelling_param_11, fuelling_param_12, fuelling_param_13, fuelling_param_14,
-  fuelling_param_15, fuelling_param_16, fuelling_param_17, fuelling_param_18, fuelling_param_19,
-  fuelling_param_20, fuelling_param_21 };
-
-char fuelling_values[22][6] = { "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" };
-
 // Fault codes texts
 #ifdef _FAULT_CODES_STRINGS_
 const char fault_code_void[]="Unknown";
@@ -208,32 +176,32 @@ const char fault_code_26_03[]="26-3 vehicle accel. outside bounds for cruise con
 const char fault_code_26_07[]="26-7 cruise control resume stuck closed (C)";
 const char fault_code_26_08[]="26-8 cruise control set stuck closed (C)";
 const char fault_code_27_01[]="27-1 inj. 1 peak charge long (L)";
-const char fault_code_27_02[]="27-2 inj. 2 peck charge long (L)";
+const char fault_code_27_02[]="27-2 inj. 2 peak charge long (L)";
 const char fault_code_27_03[]="27-3 inj. 3 peak charge long (L)";
-const char fault_code_27_04[]="27-4 inj. 4 peck charge long (L)";
+const char fault_code_27_04[]="27-4 inj. 4 peak charge long (L)";
 const char fault_code_27_05[]="27-5 inj. 5 peak charge long (L)";
-const char fault_code_27_06[]="27-6 inj. 6 peck charge long (L)";
+const char fault_code_27_06[]="27-6 inj. 6 peak charge long (L)";
 const char fault_code_27_07[]="27-7 topside switch failed post injection (L)";
 const char fault_code_28_01[]="28-1 inj. 1 peak charge short (L)";
-const char fault_code_28_02[]="28-2 inj. 2 peck charge short (L)";
+const char fault_code_28_02[]="28-2 inj. 2 peak charge short (L)";
 const char fault_code_28_03[]="28-3 inj. 3 peak charge short (L)";
-const char fault_code_28_04[]="28-4 inj. 4 peck charge short (L)";
+const char fault_code_28_04[]="28-4 inj. 4 peak charge short (L)";
 const char fault_code_28_05[]="28-5 inj. 5 peak charge short (L)";
-const char fault_code_28_06[]="28-6 inj. 6 peck charge short (L)";
+const char fault_code_28_06[]="28-6 inj. 6 peak charge short (L)";
 const char fault_code_28_07[]="28-7 topside switch failed pre injection (L)";
 const char fault_code_29_01[]="29-1 inj. 1 peak charge long (C)";
-const char fault_code_29_02[]="29-2 inj. 2 peck charge long (C)";
+const char fault_code_29_02[]="29-2 inj. 2 peak charge long (C)";
 const char fault_code_29_03[]="29-3 inj. 3 peak charge long (C)";
-const char fault_code_29_04[]="29-4 inj. 4 peck charge long (C)";
+const char fault_code_29_04[]="29-4 inj. 4 peak charge long (C)";
 const char fault_code_29_05[]="29-5 inj. 5 peak charge long (C)";
-const char fault_code_29_06[]="29-6 inj. 6 peck charge long (C)";
+const char fault_code_29_06[]="29-6 inj. 6 peak charge long (C)";
 const char fault_code_29_07[]="29-7 topside switch failed post injection (C)";
 const char fault_code_30_01[]="30-1 inj. 1 peak charge short (C)";
-const char fault_code_30_02[]="30-2 inj. 2 peck charge short (C)";
+const char fault_code_30_02[]="30-2 inj. 2 peak charge short (C)";
 const char fault_code_30_03[]="30-3 inj. 3 peak charge short (C)";
-const char fault_code_30_04[]="30-4 inj. 4 peck charge short (C)";
+const char fault_code_30_04[]="30-4 inj. 4 peak charge short (C)";
 const char fault_code_30_05[]="30-5 inj. 5 peak charge short (C)";
-const char fault_code_30_06[]="30-6 inj. 6 peck charge short (C)";
+const char fault_code_30_06[]="30-6 inj. 6 peak charge short (C)";
 const char fault_code_30_07[]="30-7 topside switch failed pre injection (C)";
 const char fault_code_31_01[]="31-1 inj. 1 open circuit (L)";
 const char fault_code_31_02[]="31-2 inj. 2 open circuit (L)";

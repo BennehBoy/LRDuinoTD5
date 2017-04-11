@@ -24,8 +24,5 @@ Td5strings.h -
 #ifdef _FAULT_CODES_STRINGS_
 extern const char *fault_code[];
 #endif
-extern const char *fuelling_params[];
-extern char fuelling_values[22][6];
-
 #endif
 

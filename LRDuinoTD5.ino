@@ -1,7 +1,8 @@
 // LRDuino by Ben Anderson
-// Version 0.03  (STM32 Only)
+// Version 0.04  (STM32 Only)
 #include "LRDuinoDefs.h"
-#include <Adafruit_SSD1306.h>
+#include <MUX154.h>
+#include "Adafruit_SSD1306.h"
 #include <SdFat.h>
 #include "LRDuinoGFX.h"
 #include <Fonts/FreeSansBoldOblique12pt7b.h>
@@ -19,10 +20,11 @@
 using namespace Menu;
 
 
-byte RegisterValues[] =    {0x90,  0x03,   0xFC,   0x7F,   0xC0,   0x07,     0xFF,     0x80,     0x00,     0x00 };
+byte RegisterValues[] =    {0x90,  0x03,   0xFC,   0x7F,   0xC0,   0x7F,     0xFF,     0x80,     0x00,     0x00 };
 String RegisterNames[] =   {"CR0", "CR1", "MASK", "CJHF", "CHLF", "LTHFTH", "LTHFTL", "LTLFTH", "LTLFTL", "CJTO"};
 byte RegisterAddresses[] = {0x00,  0x01,   0x02,   0x03,   0x04,   0x04,     0x06,     0x07,     0x08,     0x09 };
 
+MUX154 mux154(MUX_A0, MUX_A1, MUX_A2, MUX_A3, MUX_E1);
 
 Td5Comm td5;
 
@@ -33,14 +35,14 @@ Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 Adafruit_HMC5883_Unified mag = Adafruit_HMC5883_Unified(12345);
 
 //HARDWARE SPI
-Adafruit_SSD1306 display1(OLED_DC, OLED_RESET, OLED_CS);
-Adafruit_SSD1306 display2(OLED_DC, OLED_RESET, OLED_CS_2);
-Adafruit_SSD1306 display3(OLED_DC, OLED_RESET, OLED_CS_3);
-Adafruit_SSD1306 display4(OLED_DC, OLED_RESET, OLED_CS_4);
-Adafruit_SSD1306 display5(OLED_DC, OLED_RESET, OLED_CS_5);
-Adafruit_SSD1306 display6(OLED_DC, OLED_RESET, OLED_CS_6);
-Adafruit_SSD1306 display7(OLED_DC, OLED_RESET, OLED_CS_7);
-Adafruit_SSD1306 display8(OLED_DC, OLED_RESET, OLED_CS_8);
+Adafruit_SSD1306 display1(OLED_DC, OLED_RESET, MUX_OLEDCS_1);
+Adafruit_SSD1306 display2(OLED_DC, OLED_RESET, MUX_OLEDCS_2);
+Adafruit_SSD1306 display3(OLED_DC, OLED_RESET, MUX_OLEDCS_3);
+Adafruit_SSD1306 display4(OLED_DC, OLED_RESET, MUX_OLEDCS_4);
+Adafruit_SSD1306 display5(OLED_DC, OLED_RESET, MUX_OLEDCS_5);
+Adafruit_SSD1306 display6(OLED_DC, OLED_RESET, MUX_OLEDCS_6);
+Adafruit_SSD1306 display7(OLED_DC, OLED_RESET, MUX_OLEDCS_7);
+Adafruit_SSD1306 display8(OLED_DC, OLED_RESET, MUX_OLEDCS_8);
 
 #if (SSD1306_LCDHEIGHT != 64)
 #error("Height incorrect, please fix Adafruit_SSD1306.h!");
@@ -74,7 +76,7 @@ typedef struct
   const char sensename[13];
 } SingleSensor;
 
-SingleSensor Sensors[12] = {
+SingleSensor Sensors[16] = {
  //active  master slaveID senseorder	warnstatus    sensefault senseglyphs sensevals  units maxvals minvals peakvals warnhivals warnlovals
   {true,   true,  99,     0,			false,        0,         trbBMP,     0,         1,    32,     0,      0,       29,        -999,	"Boost"}, 		// Boost
   {true,   true,  99,     0,			false,        0,         tboxBMP,    0,         0,    150,    -40,    -40,     140,       -999,	"Tbox Temp"}, 	// Transfer Box Temp
@@ -85,13 +87,17 @@ SingleSensor Sensors[12] = {
   {true,   true,  7,      0,			false,        0,         D2a0,       0,         3,    45,     -45,    0,       30,        -30,	"Roll"},  		// Vehicle Roll
   {true,   false, 99,     0,			false,        0,         D2p0,       0,         3,    60,     -60,    0,       45,        -45,	"Pitch"},  		// Vehicle Pitch
   {false,   true,  99,     0,			false,        0,         compass,    0,         3,    360,    0,      0,       999,       -999,	"Compass"}, 	// Magnetometer
-  {true,   true,  99,     0,			false,        0,         Gauge,      0,       4,    4500,   0,      0,       4500,      600,	"RPM (OBD)"},  	// RPM
+  {true,   true,  99,     0,			false,        0,         Gauge,      0,         4,    4500,   0,      0,       4500,      600,	"RPM (OBD)"},  	// RPM
   {true,   true,  99,     0,			false,        0,         Gauge,      0,         5,    100,    -30,    0,       100,       -30,	"Speed (OBD)"}, // Roadspeed
-  {true,   false,  99,     0,			false,        0,         cooltmp,    0,         0,    130,    -30,    0,       100,       -999,	"Coolant Temp"} // Coolant
+  {true,   false,  99,     0,			false,        0,         cooltmp,    0,         0,    130,    -30,    0,       100,       -999,	"ECT (OBD)"},   // Coolant
+  {true,   true,  99,     0,			false,        0,         OBDII,   	 0,         7,    16,     0,	  0,       15,        11,	"BtV (OBD)"},   // Battery Voltage
+  {false,   true,  99,     0,			true,        0,         OBDII,   	 0,         0,    100,    -40,	  0,       50,        -999,	"InT (OBD)"},   // Inlet Temperature
+  {false,   true,  99,     0,			true,        0,         OBDII,   	 0,         0,    100,    -40,	  0,       75,        -999,	"FlT (OBD)"},   // Fuel Temperature
+  {false,   true,  99,     0,			true,        0,         OBDII,   	 0,         1,    20,     0,	  0,       16,        12,	"AAP (OBD)"}    // Ambient Pressure
 };
 
 uint8_t sensecount = 0;
-const uint8_t totalsensors = 12; //this is the actual number of definitions above
+const uint8_t totalsensors = 16; //this is the actual number of definitions above
 uint8_t rotation = 0; // incremented by 1 with each button press - it's used to tell the drawdisplay functions which sensor data they should output.
 
 // the follow variable is a long because the time, measured in miliseconds,
@@ -172,7 +178,22 @@ TOGGLE(Sensors[11].senseactive,sensor11Toggle, "ECT (OBD): ",getSensecount,enter
   ,VALUE("On",true,doNothing,noEvent)
   ,VALUE("Off",false,doNothing,noEvent)
 );
-
+TOGGLE(Sensors[12].senseactive,sensor12Toggle, "BtV (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+  ,VALUE("On",true,doNothing,noEvent)
+  ,VALUE("Off",false,doNothing,noEvent)
+);
+TOGGLE(Sensors[13].senseactive,sensor13Toggle, "InT (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+  ,VALUE("On",true,doNothing,noEvent)
+  ,VALUE("Off",false,doNothing,noEvent)
+);
+TOGGLE(Sensors[14].senseactive,sensor14Toggle, "FlT (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+  ,VALUE("On",true,doNothing,noEvent)
+  ,VALUE("Off",false,doNothing,noEvent)
+);
+TOGGLE(Sensors[15].senseactive,sensor15Toggle, "AAP (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+  ,VALUE("On",true,doNothing,noEvent)
+  ,VALUE("Off",false,doNothing,noEvent)
+);
 MENU(togsensMenu,"En/Dis(able) Sensors",doNothing,anyEvent,wrapStyle
 	,SUBMENU(sensor0Toggle)
 	,SUBMENU(sensor1Toggle)
@@ -184,6 +205,10 @@ MENU(togsensMenu,"En/Dis(able) Sensors",doNothing,anyEvent,wrapStyle
 	,SUBMENU(sensor9Toggle)
 	,SUBMENU(sensor10Toggle)
 	,SUBMENU(sensor11Toggle)
+	,SUBMENU(sensor12Toggle)
+	,SUBMENU(sensor13Toggle)
+	,SUBMENU(sensor14Toggle)
+	,SUBMENU(sensor15Toggle)	
   ,EXIT("<Back")
 );
 
@@ -246,23 +271,19 @@ void setup()   {
   //start serial connection
   Serial.begin(9600);  //uncomment to send serial debug info
 
+  mux154.begin();
+
   // Pin setup
-  pinMode (OLED_CS, OUTPUT);
-  digitalWrite(OLED_CS, HIGH);
-  pinMode (OLED_CS_2, OUTPUT);
-  digitalWrite(OLED_CS_2, HIGH);
-  pinMode (OLED_CS_3, OUTPUT);
-  digitalWrite(OLED_CS_3, HIGH);
-  pinMode (OLED_CS_4, OUTPUT);
-  digitalWrite(OLED_CS_4, HIGH);
-  pinMode (OLED_CS_5, OUTPUT);
-  digitalWrite(OLED_CS_5, HIGH);
-  pinMode (OLED_CS_6, OUTPUT);
-  digitalWrite(OLED_CS_6, HIGH);
-  pinMode (OLED_CS_7, OUTPUT);
-  digitalWrite(OLED_CS_7, HIGH);
-  pinMode (OLED_CS_8, OUTPUT);
-  digitalWrite(OLED_CS_8, HIGH);
+  pinMode (MUX_A0, OUTPUT);
+  digitalWrite(MUX_A0, HIGH);
+  pinMode (MUX_A1, OUTPUT);
+  digitalWrite(MUX_A1, HIGH);
+  pinMode (MUX_A2, OUTPUT);
+  digitalWrite(MUX_A2, HIGH);
+  pinMode (MUX_A3, OUTPUT);
+  digitalWrite(MUX_A3, HIGH);
+  pinMode (MUX_E1, OUTPUT);
+  digitalWrite(MUX_E1, HIGH);
   pinMode (MAX_CS, OUTPUT);
   digitalWrite(MAX_CS, HIGH);
   pinMode (SD_CS, OUTPUT);
@@ -343,7 +364,13 @@ void initOBD(void) {
 		disableOBDSensors();
 	} else {
  		for (uint8_t i=9; i < totalsensors; i++) {
-			Sensors[i].senseactive = true;
+			if (Sensors[i].warnstatus == true) { // already disabled so set warnstatus to true - we'll use this as temp storage so we don't re-enable if OBD gets re-initialised
+				Sensors[i].senseactive = false; // should already be false but no harm in making sure
+				Sensors[i].warnstatus = false;
+			} else {
+				Sensors[i].senseactive = true;
+				Sensors[i].warnstatus = false;
+			}
 		}
 		getSensecount();
 	}
@@ -352,7 +379,13 @@ void initOBD(void) {
 
 void disableOBDSensors(void) {
 		for (uint8_t i=9; i < totalsensors; i++) {
-			Sensors[i].senseactive = false;
+			if (Sensors[i].senseactive == false) { // already disabled so set warnstatus to true - we'll use this as temp storage so we don't re-enable if OBD gets re-initialised
+				Sensors[i].senseactive = false;
+				Sensors[i].warnstatus = true;
+			} else {
+				Sensors[i].senseactive = false;
+				Sensors[i].warnstatus = false;
+			}
 		}
 	getSensecount();
 }
@@ -395,9 +428,9 @@ void toggleDatalog(void) {
 				sdLogFile.print(Sensors[8].sensename);sdLogFile.print(";");
 				sdLogFile.print(Sensors[9].sensename);sdLogFile.print(";");
 				sdLogFile.print(Sensors[10].sensename);sdLogFile.print(";");
-				sdLogFile.print(Sensors[11].sensename);sdLogFile.print(";");
-				sdLogFile.print(Sensors[12].sensename);sdLogFile.print(";");
-				sdLogFile.print(Sensors[13].sensename);sdLogFile.println(";");
+				sdLogFile.print(Sensors[11].sensename);sdLogFile.println(";");
+//				sdLogFile.print(Sensors[12].sensename);sdLogFile.print(";");
+//				sdLogFile.print(Sensors[13].sensename);sdLogFile.println(";");
 			} else { //file open failed
 				dataLog = false;
 				Serial.println("failed to open file");
@@ -427,9 +460,9 @@ void writeDatalogline(void) {
 		sdLogFile.print(Sensors[8].sensevals);sdLogFile.print(";");
 		sdLogFile.print(Sensors[9].sensevals);sdLogFile.print(";");
 		sdLogFile.print(Sensors[10].sensevals);sdLogFile.print(";");
-		sdLogFile.print(Sensors[11].sensevals);sdLogFile.print(";");
-		sdLogFile.print(Sensors[12].sensevals);sdLogFile.print(";");
-		sdLogFile.print(Sensors[13].sensevals);sdLogFile.println(";");
+		sdLogFile.print(Sensors[11].sensevals);sdLogFile.println(";");
+//		sdLogFile.print(Sensors[12].sensevals);sdLogFile.print(";");
+//		sdLogFile.print(Sensors[13].sensevals);sdLogFile.println(";");
 	} 
 }
 
@@ -584,7 +617,7 @@ void loop() {
     if (Sensors[9].senseactive) {
 		if (td5.ecuIsConnected()) {
 			if(td5.getPid(&pidRPM) > 0) {
-				Sensors[9].sensevals = pidRPM.getlValue();
+				Sensors[9].sensevals = pidRPM.getlValue(); // RPM
 			}
 		}
     }
@@ -592,7 +625,7 @@ void loop() {
    	if (Sensors[10].senseactive) {
 		if (td5.ecuIsConnected()) {
 			if(td5.getPid(&pidVehicleSpeed) > 0) {			
-				Sensors[10].sensevals = pidVehicleSpeed.getbValue(0);
+				Sensors[10].sensevals = pidVehicleSpeed.getbValue(0); // Speed
 			}
 		}
 	} 
@@ -600,13 +633,48 @@ void loop() {
   	if (Sensors[11].senseactive) {
 		if (td5.ecuIsConnected()) {
 			if(td5.getPid(&pidTemperatures) > 0) {
-				Sensors[11].sensevals = pidTemperatures.getfValue(0);
+				Sensors[11].sensevals = pidTemperatures.getfValue(0); // Coolant Temp
+			}
+		}
+	audibleWARN(11);
+	} 	
+
+  	if (Sensors[12].senseactive) {
+		if (td5.ecuIsConnected()) {
+			if(td5.getPid(&pidBatteryVoltage) > 0) {
+				Sensors[12].sensevals = pidBatteryVoltage.getfValue(); // Battery Voltage
+			}
+		}
+	audibleWARN(12);
+	} 	
+
+  	if (Sensors[13].senseactive) {
+		if (td5.ecuIsConnected()) {
+			if(td5.getPid(&pidTemperatures) > 0) {
+				Sensors[13].sensevals = pidTemperatures.getfValue(1); // Inlet Temp
 			}
 		}
 	audibleWARN(13);
-	} 	
-  
-  
+	} 
+	
+  	if (Sensors[14].senseactive) {
+		if (td5.ecuIsConnected()) {
+			if(td5.getPid(&pidTemperatures) > 0) {
+				Sensors[14].sensevals = pidTemperatures.getfValue(3); // Fuel Temp
+			}
+		}
+	audibleWARN(14);
+	}
+	
+  	if (Sensors[15].senseactive) {
+		if (td5.ecuIsConnected()) {
+			if(td5.getPid(&pidAmbientPressure) > 0) {
+				Sensors[15].sensevals = pidAmbientPressure.getfValue(1); // AAP
+			}
+		}
+	audibleWARN(15);
+	} 
+
 	if(dataLog == true) {
 		writeDatalogline();  // write out the last readings if we're logging
 	}
@@ -969,12 +1037,13 @@ String getUnits(uint8_t sensor) { // returns the units associated with the senso
       return ("mph");
 	case 6:
 	  return ("g/m");
-	  
+	case 7:
+	  return ("V");  
   }
 }
 
 String getValIfNoErr(uint8_t sensor) { //prevents values being displayed if we are in fault state OR this is a boolean sensor (coolant level)
-  String text = String(Sensors[sensor].sensevals);
+  //String text = String(Sensors[sensor].sensevals);
   // if a fault is set return an empty string
 
   if (sensor == 5 && Sensors[sensor].sensefault == 0) {
@@ -983,7 +1052,7 @@ String getValIfNoErr(uint8_t sensor) { //prevents values being displayed if we a
   if (Sensors[sensor].sensefault > 0) {
     return ("Err");
   }
-  return (text);
+  return (String(Sensors[sensor].sensevals));
 }
 
 int8_t processRotation(uint8_t location) { // this is used to shift our array of data around the screens

@@ -8,7 +8,7 @@
 #define BUT_DELAY 	100
 #define MAX_DEPTH 	3
 #define DIVISOR     4095
-#define MENUTIMEOUT 5000
+#define MENUTIMEOUT 10000
 #define _FAULT_CODES_STRINGS_
 
 // Following pinout details are for Maple Mini
@@ -32,17 +32,23 @@
 #define MAX_CS      PC13	//14
 // PB7 //15 is I2C SDA
 // PB6 //16 is I2C SCL
-#define SD_CS		PB2
-#define OLED_CS     PB5		//17
-#define OLED_CS_2   PB4		//18
-#define OLED_CS_3   PB3		//19
-#define OLED_CS_4   PA15	//20
-#define OLED_CS_5   PA14	//21
-#define OLED_CS_6   PA13	//22
+#define SD_CS		PA13     // 22
 // PA12 - 23 is USB
 // PA11 - 24 is USB
-#define OLED_CS_7   PA10	//25
-#define OLED_CS_8   PA9		//26
+#define MUX_OLEDCS_1 0
+#define MUX_OLEDCS_2 1
+#define MUX_OLEDCS_3 2
+#define MUX_OLEDCS_4 3
+#define MUX_OLEDCS_5 4
+#define MUX_OLEDCS_6 5
+#define MUX_OLEDCS_7 6
+#define MUX_OLEDCS_8 7
+#define MUX_A0	PB5 //17
+#define MUX_A1	PB4 //18
+#define MUX_A2	PB3 //19
+#define MUX_A3	PA15 //20
+#define MUX_E1	PA14 //21
+
 #define OLED_RESET  PA8		//27
 #define OLED_DC     PB15	//28
 // user input
@@ -51,7 +57,7 @@
 #define SELBUT      PB12	//31 
 
 #define K_OUT       PB10  //26   //TX1
-#define K_IN        PB11 //25	  //RX1
+#define K_IN        PB11  //25	  //RX1
 
 // MAX31856 registers
 #define NumRegisters 10

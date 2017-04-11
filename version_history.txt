@@ -1,3 +1,10 @@
+Version 0.04
+CS lines for screens now provided via a 74HC154 demux - see MUX154 forked library in my guthub.
+Modified adafruit library included to drive the SSD_1306 CS lines via the demux.
+More OBD sensors added (disabled)
+Menus updated for added sensors
+Extraneous code removed from td5comm.cpp
+
 Version 0.03
 Forked project from LRDuino (ELM327 based) to LRDuinoTD5
 Removed ELM327 code

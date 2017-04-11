@@ -441,20 +441,10 @@ void Td5Comm::initComm()
 
 boolean Td5Comm::connectToEcu(boolean showBar)
 {
-  /* ProgBar bar(0, 3, 20, 0, 7);
-  if(showBar)
-  { 
-    bar.show();
-  } */
   initStep = 0;
   do
   {
     initComm();
-	Serial.println("wtf!!");
-/*     if(showBar)
-    { 
-      bar.update(initStep);
-    } */
   }
   while (initStep != 0);
   
@@ -468,133 +458,6 @@ void Td5Comm::disconnectFromEcu()
   lostFrames = 0;
 //  digitalWrite(ledPin, LOW);
   ecuConnection = false; 
-}
-
-void Td5Comm::fuellingCycle()
-{
-  if(getPid(&pidRPM) > 0)
-  {
-    dtostrf(pidRPM.getlValue(), 5, 0, fuelling_values[1]);
-    newDataAvailable = true;
-    return;
-  }
-
-  if(getPid(&pidInjectorsBalance) > 0)
-  {
-    sprintf(fuelling_values[17], "%5d", pidInjectorsBalance.getulValue(0));
-    sprintf(fuelling_values[18], "%5d", pidInjectorsBalance.getulValue(1));
-    sprintf(fuelling_values[19], "%5d", pidInjectorsBalance.getulValue(2));
-    sprintf(fuelling_values[20], "%5d", pidInjectorsBalance.getulValue(3));
-    sprintf(fuelling_values[21], "%5d", pidInjectorsBalance.getulValue(4)); 
-    return;
-  }
-
-  if(getPid(&pidTurboPressureMaf) > 0)
-  {
-    dtostrf((pidTurboPressureMaf.getfValue(0) - ambientPressure), 5, 2, fuelling_values[3]);
-    dtostrf(pidTurboPressureMaf.getfValue(2), 5, 1, fuelling_values[5]);
-    return;
-  }
-
-  if(getPid(&pidTemperatures) > 0)
-  {
-    dtostrf(pidTemperatures.getfValue(0), 5, 1, fuelling_values[14]);
-    dtostrf(pidTemperatures.getfValue(1), 5, 1, fuelling_values[15]);
-    dtostrf(pidTemperatures.getfValue(3), 5, 1, fuelling_values[16]);    
-    return;
-  }
-
-  if(getPid(&pidThrottlePosition) > 0)
-  {
-    dtostrf(pidThrottlePosition.getfValue(0), 5, 3, fuelling_values[6]);
-    dtostrf(pidThrottlePosition.getfValue(1), 5, 3, fuelling_values[7]);
-    dtostrf(pidThrottlePosition.getfValue(2), 5, 3, fuelling_values[8]);
-    dtostrf(pidThrottlePosition.getfValue(4), 5, 3, fuelling_values[9]);
-    return;
-  }
-
-  if(getPid(&pidVehicleSpeed) > 0)
-  {
-    sprintf(fuelling_values[0], "%5d", pidVehicleSpeed.getbValue(0));
-    return;
-  }
-
-  if(getPid(&pidBatteryVoltage) > 0)
-  {
-    dtostrf(pidBatteryVoltage.getfValue(), 5, 1, fuelling_values[2]);
-    return;
-  }
-  
-  if(getPid(&pidRPMError) > 0)
-  {
-    sprintf(fuelling_values[13], "%5d", pidRPMError.getulValue());
-    return;
-  }  
-
-  if(getPid(&pidAmbientPressure) > 0)
-  {
-    ambientPressure = pidAmbientPressure.getfValue(1);
-    dtostrf(pidAmbientPressure.getfValue(1), 5, 2, fuelling_values[4]);
-    return;
-  }  
-
-  if(getPid(&pidEGR) > 0)
-  {
-    dtostrf(pidEGR.getfValue(), 5, 1, fuelling_values[10]);
-    return;
-  }
-
-  if(getPid(&pidILT) > 0)
-  {
-    dtostrf(pidILT.getfValue(), 5, 1, fuelling_values[11]);
-    return;
-  }
-
-/*
-  if(getPid(&pidTWG) > 0)
-  {
-    dtostrf(pidTWG.getfValue(), 5, 1, fuelling_values[12]);
-    return;
-  }
-*/
-}
-
-
-void Td5Comm::instrumentCycle()
-{
-/*   if(getPid(&pidRPM) > 0)
-  {
-    print_pid(0, 0, "RPM", pidRPM.getlValue(), 0);
-    return;
-  }
-
-  if(getPid(&pidTurboPressureMaf) > 0)
-  {
-    print_pid(0, 1, "TbP", ((pidTurboPressureMaf.getfValue(0) - ambientPressure) > 0 ? (pidTurboPressureMaf.getfValue(0) - ambientPressure) : 0.0), 2);
-    print_pid(10, 2, "MAF", pidTurboPressureMaf.getfValue(2), 1);
-    return;
-  }
-
-  if(getPid(&pidTemperatures) > 0)
-  {
-    print_pid(10, 0, "CoT", pidTemperatures.getfValue(0), 1);
-    print_pid(0, 3, "InT", pidTemperatures.getfValue(1), 1);
-    print_pid(10, 3, "FlT", pidTemperatures.getfValue(3), 1);
-    return;
-  }
-
-  if(getPid(&pidBatteryVoltage) > 0)
-  {
-    print_pid(10, 1, "BtV", pidBatteryVoltage.getfValue(), 1);
-    return;
-  }
-
-  if(getPid(&pidAmbientPressure) > 0)
-  {
-    ambientPressure = pidAmbientPressure.getfValue(1);
-    print_pid(0, 2, "InP", ambientPressure, 2);
-    return;
-  } */
 }
 
 
