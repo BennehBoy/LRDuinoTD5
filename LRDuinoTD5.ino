@@ -1,5 +1,5 @@
 // LRDuino by Ben Anderson
-// Version 0.04  (STM32 Only)
+// Version 0.05  (STM32 Only)
 #include "LRDuinoDefs.h"
 #include <MUX154.h>
 #include "Adafruit_SSD1306.h"
@@ -14,6 +14,7 @@
 //#include <menuIO/serialOut.h>
 #include <menuIO/chainStream.h>
 #include <menuIO/adafruitGfxOut.h>
+#include <menuIO/serialIn.h>
 #include <Buttons.h>
 #include "td5comm.h"
 
@@ -264,13 +265,13 @@ MENU_OUTPUTS(out,MAX_DEPTH
   ,NONE//must have 2 items at least
 );
 
-NAVROOT(nav,mainMenu,MAX_DEPTH,Serial,out);
+serialIn in(Serial);
+NAVROOT(nav,mainMenu,MAX_DEPTH,in,out);
 // END MENUS
 
 void setup()   {
   //start serial connection
-  Serial.begin(9600);  //uncomment to send serial debug info
-
+  //Serial.begin(9600);  //uncomment to send serial debug info
   mux154.begin();
 
   // Pin setup
@@ -354,7 +355,7 @@ void setup()   {
   
   // set up our analogue inputs on STM32
   for (int x = 7; x < 11; x++) {
-    pinMode(x, INPUT_ANALOG);
+    //pinMode(x, INPUT_ANALOG);
   }
 }
 
@@ -467,7 +468,6 @@ void writeDatalogline(void) {
 }
 
 void loop() {
-
   unsigned long currentMillis = millis(); //store the time
 
   // USER INTERACTION
@@ -496,7 +496,8 @@ void loop() {
 			}
 			nav.active().dirty=true;//for a menu
 			nav.navFocus->dirty=true;//should invalidate also full screen fields assert(nav.navFocus!=NULL)
-			nav.poll();//do serial input
+			//nav.poll();//do serial input
+			nav.doOutput(); //need to use this as .poll also processes input (using the fake Serial stream == compilation failure)
 			display1.display();
 			display1.clearDisplay();	
 		}
@@ -984,7 +985,7 @@ void audibleWARN(uint8_t sensor) {
   // sound the buzzer if their's a warning condition
   if (processHiLo(sensor, false)) {
     if (PIEZO > 0) {
-      tone(PIEZO, 2000, 200);
+      //tone(PIEZO, 2000, 200);
     }
   }
 }

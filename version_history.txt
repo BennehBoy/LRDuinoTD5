@@ -1,3 +1,6 @@
+Version 0.0.5
+Updated to work with ArduinoMenu 4 (requires use of a bogus Serial stream)
+
 Version 0.04
 CS lines for screens now provided via a 74HC154 demux - see MUX154 forked library in my guthub.
 Modified adafruit library included to drive the SSD_1306 CS lines via the demux.
