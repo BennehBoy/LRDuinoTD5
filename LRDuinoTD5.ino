@@ -661,14 +661,11 @@ void drawDISPLAY(Adafruit_SSD1306 &refDisp, uint8_t index) { // DISPLAY 1 is our
   
   if (sensor0 == -1) {
   // don't draw anything because there are less sensors than displays
-  } else if (sensor0 == 8) { // draw compass
-    drawCompass(32, 32, 30, refDisp, sensor0);
-    drawSensor(15, 20, refDisp, sensor0, false);
   } else if (Sensors[sensor0].slaveID != 99) { // draw paired sensors
     drawSensor(0, 0, refDisp, sensor0, true);
     drawSensor(33, 0, refDisp, Sensors[sensor0].slaveID, true);
-  } else if ((sensor0 == 20)) {
-    drawSensor(0, 0, refDisp, sensor0, true); // draw all other sensors with a standard bargraph
+  } else if ((sensor0 == 20)) { // draw a bargraph
+    drawSensor(0, 0, refDisp, sensor0, true); 
     drawBarGraph(refDisp, sensor0);
   } else {
 	drawBIG(refDisp, sensor0);  
@@ -790,45 +787,6 @@ void drawItem(int x, int y, String token, int txt_size, Adafruit_SSD1306 &refDis
   refDisp.setTextSize(1); // Back to default text size
 }
 
-void drawArrow(int x2, int y2, int x1, int y1, int alength, int awidth, int colour, Adafruit_SSD1306 &refDisp) {
-  float distance;
-  int dx, dy, x2o, y2o, x3, y3, x4, y4, k;
-  distance = sqrt(pow((x1 - x2), 2) + pow((y1 - y2), 2));
-  dx = x2 + (x1 - x2) * alength / distance;
-  dy = y2 + (y1 - y2) * alength / distance;
-  k = awidth / alength;
-  x2o = x2 - dx;
-  y2o = dy - y2;
-  x3 = y2o * k + dx;
-  y3 = x2o * k + dy;
-  x4 = dx - y2o * k;
-  y4 = dy - x2o * k;
-  refDisp.drawLine(x1, y1, x2, y2, colour);
-  refDisp.drawLine(x1, y1, dx, dy, colour);
-  refDisp.drawLine(x3, y3, x4, y4, colour);
-  refDisp.drawLine(x3, y3, x2, y2, colour);
-  refDisp.drawLine(x2, y2, x4, y4, colour);
-}
-
-void drawCompass(uint8_t centreX, uint8_t centreY, uint8_t radius, Adafruit_SSD1306 &refDisp, uint8_t sensor) {
-  int dxo, dyo, dxi, dyi, dx, dy;
-  refDisp.drawCircle(centreX, centreY, radius, WHITE); // Draw compass circle
-  for (float i = 0; i < 360; i = i + 22.5) {
-    dxo = radius * cos(i * 3.14 / 180);
-    dyo = radius * sin(i * 3.14 / 180);
-    dxi = dxo * 0.95;
-    dyi = dyo * 0.95;
-    refDisp.drawLine(dxi + centreX, dyi + centreY, dxo + centreX, dyo + centreY, WHITE);
-  }
-  drawItem((centreX - 2), (centreY - 24), "N", 1, refDisp);
-  drawItem((centreX - 2), (centreY + 17), "S", 1, refDisp);
-  drawItem((centreX + 19), (centreY - 3), "E", 1, refDisp);
-  drawItem((centreX - 23), (centreY - 3), "W", 1, refDisp);
-
-  dx = (0.7 * radius * cos((Sensors[sensor].sensevals - 90) * 3.14 / 180)) + centreX; // calculate X position for the screen coordinates - can be confusing!
-  dy = (0.7 * radius * sin((Sensors[sensor].sensevals - 90) * 3.14 / 180)) + centreY;
-  drawArrow(dx, dy, centreX, centreY, 2, 2, WHITE, refDisp);
-}
 
 bool processHiLo(uint8_t sensor, bool toggle) {
   // this function toggles a an error flag if the current sensor is above it's high warning parameter or below it's low warning paramater - since the display is redrawn every 250ms it appears to flash
