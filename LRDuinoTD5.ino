@@ -1,17 +1,14 @@
 // LRDuino by Ben Anderson
-// Version 0.05  (STM32 Only)
+// Version 0.06  (STM32 Only)
+
 #include "LRDuinoDefs.h"
-#include <MUX154.h>
-#include "Adafruit_SSD1306.h"
+#include <Adafruit_SSD1306.h>
+#include <SPI.h>
 #include <SdFat.h>
 #include "LRDuinoGFX.h"
 #include <Fonts/FreeSansBoldOblique12pt7b.h>
 #include <Fonts/FreeSansBoldOblique24pt7b.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_ADXL345_U.h>
-#include <Adafruit_HMC5883_U.h>
 #include <menu.h>
-//#include <menuIO/serialOut.h>
 #include <menuIO/chainStream.h>
 #include <menuIO/adafruitGfxOut.h>
 #include <menuIO/serialIn.h>
@@ -25,25 +22,13 @@ byte RegisterValues[] =    {0x90,  0x03,   0xFC,   0x7F,   0xC0,   0x7F,     0xF
 String RegisterNames[] =   {"CR0", "CR1", "MASK", "CJHF", "CHLF", "LTHFTH", "LTHFTL", "LTLFTH", "LTLFTL", "CJTO"};
 byte RegisterAddresses[] = {0x00,  0x01,   0x02,   0x03,   0x04,   0x04,     0x06,     0x07,     0x08,     0x09 };
 
-MUX154 mux154(MUX_A0, MUX_A1, MUX_A2, MUX_A3, MUX_E1);
-
 Td5Comm td5;
 
 SdFat sd;
 SdFile sdLogFile;
 
-Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
-Adafruit_HMC5883_Unified mag = Adafruit_HMC5883_Unified(12345);
-
 //HARDWARE SPI
-Adafruit_SSD1306 display1(OLED_DC, OLED_RESET, MUX_OLEDCS_1);
-Adafruit_SSD1306 display2(OLED_DC, OLED_RESET, MUX_OLEDCS_2);
-Adafruit_SSD1306 display3(OLED_DC, OLED_RESET, MUX_OLEDCS_3);
-Adafruit_SSD1306 display4(OLED_DC, OLED_RESET, MUX_OLEDCS_4);
-Adafruit_SSD1306 display5(OLED_DC, OLED_RESET, MUX_OLEDCS_5);
-Adafruit_SSD1306 display6(OLED_DC, OLED_RESET, MUX_OLEDCS_6);
-Adafruit_SSD1306 display7(OLED_DC, OLED_RESET, MUX_OLEDCS_7);
-Adafruit_SSD1306 display8(OLED_DC, OLED_RESET, MUX_OLEDCS_8);
+Adafruit_SSD1306 display1(OLED_DC, OLED_RESET, OLEDCS_1);
 
 #if (SSD1306_LCDHEIGHT != 64)
 #error("Height incorrect, please fix Adafruit_SSD1306.h!");
@@ -85,8 +70,8 @@ SingleSensor Sensors[16] = {
   {true,   true,  4,      0,			false,        0,         eopBMP,     0,         1,    72,     0,      0,       60,        20,	"Oil Pressure"},// Oil Pressure
   {true,   false, 99,     0,			false,        0,         eotBMP,     0,         0,    150,    -40,    -40,     100,       -999,	"Oil Temp"}, 	// Oil Temp
   {true,   true,  11,     0,			false,        0,         coollev,    0,         2,    1,      0,      1,       999,       1,	"Coolant Lvl"}, // Coolant Level
-  {true,   true,  7,      0,			false,        0,         D2a0,       0,         3,    45,     -45,    0,       30,        -30,	"Roll"},  		// Vehicle Roll
-  {true,   false, 99,     0,			false,        0,         D2p0,       0,         3,    60,     -60,    0,       45,        -45,	"Pitch"},  		// Vehicle Pitch
+  {false,   true,  7,      0,			false,        0,         D2a0,       0,         3,    45,     -45,    0,       30,        -30,	"Roll"},  		// Vehicle Roll
+  {false,   false, 99,     0,			false,        0,         D2p0,       0,         3,    60,     -60,    0,       45,        -45,	"Pitch"},  		// Vehicle Pitch
   {false,   true,  99,     0,			false,        0,         compass,    0,         3,    360,    0,      0,       999,       -999,	"Compass"}, 	// Magnetometer
   {true,   true,  99,     0,			false,        0,         Gauge,      0,         4,    4500,   0,      0,       4500,      600,	"RPM (OBD)"},  	// RPM
   {true,   true,  99,     0,			false,        0,         Gauge,      0,         5,    100,    -30,    0,       100,       -30,	"Speed (OBD)"}, // Roadspeed
@@ -272,19 +257,10 @@ NAVROOT(nav,mainMenu,MAX_DEPTH,in,out);
 void setup()   {
   //start serial connection
   //Serial.begin(9600);  //uncomment to send serial debug info
-  mux154.begin();
 
   // Pin setup
-  pinMode (MUX_A0, OUTPUT);
-  digitalWrite(MUX_A0, HIGH);
-  pinMode (MUX_A1, OUTPUT);
-  digitalWrite(MUX_A1, HIGH);
-  pinMode (MUX_A2, OUTPUT);
-  digitalWrite(MUX_A2, HIGH);
-  pinMode (MUX_A3, OUTPUT);
-  digitalWrite(MUX_A3, HIGH);
-  pinMode (MUX_E1, OUTPUT);
-  digitalWrite(MUX_E1, HIGH);
+  pinMode (OLEDCS_1, OUTPUT);
+  digitalWrite(OLEDCS_1, HIGH);
   pinMode (MAX_CS, OUTPUT);
   digitalWrite(MAX_CS, HIGH);
   pinMode (SD_CS, OUTPUT);
@@ -293,34 +269,13 @@ void setup()   {
   MAXInitializeChannel(MAX_CS); // Init the MAX31856 
 
   display1.begin(SSD1306_SWITCHCAPVCC, SSD1306_I2C_ADDRESS, true); //construct our displays
-  display2.begin(SSD1306_SWITCHCAPVCC, SSD1306_I2C_ADDRESS, false);
-  display3.begin(SSD1306_SWITCHCAPVCC, SSD1306_I2C_ADDRESS, false);
-  display4.begin(SSD1306_SWITCHCAPVCC, SSD1306_I2C_ADDRESS, false);
-  display5.begin(SSD1306_SWITCHCAPVCC, SSD1306_I2C_ADDRESS, false);
-  display6.begin(SSD1306_SWITCHCAPVCC, SSD1306_I2C_ADDRESS, false);
-  display7.begin(SSD1306_SWITCHCAPVCC, SSD1306_I2C_ADDRESS, false);
-  display8.begin(SSD1306_SWITCHCAPVCC, SSD1306_I2C_ADDRESS, false);
 
   display1.clearDisplay();   // clears the screen and buffer
-  display2.clearDisplay();   // clears the screen and buffer
-  display3.clearDisplay();   // clears the screen and buffer
-  display4.clearDisplay();   // clears the screen and buffer
-  display5.clearDisplay();   // clears the screen and buffer
-  display6.clearDisplay();   // clears the screen and buffer
-  display7.clearDisplay();   // clears the screen and buffer
-  display8.clearDisplay();   // clears the screen and buffer
 
   display1.display(); //output to the screen to avoid adafruit logo
-  display2.display();
-  display3.display();
-  display4.display();
-  display5.display();
-  display6.display();
-  display7.display();
-  display8.display();
 
   // Ensure #define ENABLE_SPI_TRANSACTIONS 1 is set in SdFatConfig.h
-  if (!sd.begin(SD_CS, SPI_CLOCK_DIV2))
+  if (!sd.begin(SD_CS, SD_SCK_MHZ(8)))
   {
 	  
 	display1.setTextColor(WHITE);
@@ -336,18 +291,6 @@ void setup()   {
     sd_present = true;    
   }
   
-  
-  if(!accel.begin()) { //initialise ADXL345
- 	Sensors[6].senseactive = false;
-	Sensors[7].senseactive = false;
-  }
-
-  long magTime=millis();
-  !mag.begin();
-  if (millis()-magTime > 1000) { //if more than 1000 ms went by then there was an i2c timeout (doing this here rather than editing the crappy library)
- 	Sensors[8].senseactive = false; 
-  }
-
   // read our boost sensor rawADC value since at this point it should be atmospheric pressure...
   //atmos = readBoost(0,0);  // not actually used at this point so could be rmeoved
 
@@ -601,18 +544,15 @@ void loop() {
     }
 
     if (Sensors[6].senseactive) {
-      Sensors[6].sensevals = readADXL(6, false); // Inclinometer - Y (roll) angle
-      audibleWARN(6);
+
     }
 
     if (Sensors[7].senseactive) {
-      Sensors[7].sensevals = readADXL(6, true); // Inclinometer - Y (roll) angle
-      audibleWARN(7);
+
     }
 
     if (Sensors[8].senseactive) {
-      Sensors[8].sensevals = readHMC5883(8); // Magnetometer
-      // no audible warning for compass heading
+
     }
 
     if (Sensors[9].senseactive) {
@@ -685,13 +625,6 @@ void loop() {
 	if (!inMenu) {
 		drawDISPLAY(display1, 1);
 	}
-    drawDISPLAY(display2, 2);
-    drawDISPLAY(display3, 3);
-    drawDISPLAY(display4, 4);
-    drawDISPLAY(display5, 8);
-    drawDISPLAY(display6, 7);
-    drawDISPLAY(display7, 6);
-    drawDISPLAY(display8, 5);
   }
   
 	// 500 millis interval
@@ -761,64 +694,6 @@ void drawSensor(uint8_t y, uint8_t x, Adafruit_SSD1306 &refDisp, uint8_t sensor,
   drawItem(46 + x + xoffset, y + 9, getUnits(sensor), 1, refDisp);
 
   if (sensor == 6) { // INCLINOMETER ONLY (ANIMATED)
-    rolltemp = Sensors[sensor].sensevals;
-    if (rolltemp > -10 && rolltemp < 10) { // centred
-      refDisp.drawBitmap(0, y, D2a0, 32, 32, WHITE);
-    } else if (rolltemp > -20 && rolltemp <= -10) { //-10 deg
-      refDisp.drawBitmap(0, y, D2a10L, 32, 32, WHITE);
-    } else if (rolltemp > -30 && rolltemp <= -20) { //-20 deg
-      refDisp.drawBitmap(0, y, D2a20L, 32, 32, WHITE);
-    } else if (rolltemp > -40 && rolltemp <= -30) { //-30 deg
-      refDisp.drawBitmap(0, y, D2a30L, 32, 32, WHITE);
-    } else if (rolltemp > -50 && rolltemp <= -40) { //-40 deg
-      refDisp.drawBitmap(0, y, D2a40L, 32, 32, WHITE);
-    } else if (rolltemp >= 10 && rolltemp < 20) { //10 deg
-      refDisp.drawBitmap(0, y, D2a10R, 32, 32, WHITE);
-    } else if (rolltemp >= 20 && rolltemp < 30) { //20 deg
-      refDisp.drawBitmap(0, y, D2a20R, 32, 32, WHITE);
-    } else if (rolltemp >= 30 && rolltemp < 40) { //30 deg
-      refDisp.drawBitmap(0, y, D2a30R, 32, 32, WHITE);
-    } else if (rolltemp >= 40 && rolltemp < 50) { //40 deg
-      refDisp.drawBitmap(0, y, D2a40R, 32, 32, WHITE);
-      // WARNING CASE
-    } else if (rolltemp <= -50 || rolltemp >= 50) { // WARNING!
-      refDisp.drawBitmap(0, y, D2aWARN, 32, 32, WHITE);
-    }
-
-  } else if (sensor == 7) { // INCLINOMETER ONLY (ANIMATED)
-    rolltemp = Sensors[sensor].sensevals;
-    if (rolltemp > -10 && rolltemp < 10) { // centred
-      refDisp.drawBitmap(0, y, D2p0, 32, 32, WHITE);
-    } else if (rolltemp > -20 && rolltemp <= -10) { //-10 deg
-      refDisp.drawBitmap(0, y, D2p10L, 32, 32, WHITE);
-    } else if (rolltemp > -30 && rolltemp <= -20) { //-20 deg
-      refDisp.drawBitmap(0, y, D2p20L, 32, 32, WHITE);
-    } else if (rolltemp > -40 && rolltemp <= -30) { //-30 deg
-      refDisp.drawBitmap(0, y, D2p30L, 32, 32, WHITE);
-    } else if (rolltemp > -50 && rolltemp <= -40) { //-40 deg
-      refDisp.drawBitmap(0, y, D2p40L, 32, 32, WHITE);
-    } else if (rolltemp > -60 && rolltemp <= -50) { //-50 deg
-      refDisp.drawBitmap(0, y, D2p50L, 32, 32, WHITE);
-    } else if (rolltemp > -70 && rolltemp <= -60) { //-60 deg
-      refDisp.drawBitmap(0, y, D2p60L, 32, 32, WHITE);
-    } else if (rolltemp >= 10 && rolltemp < 20) { //10 deg
-      refDisp.drawBitmap(0, y, D2p10R, 32, 32, WHITE);
-    } else if (rolltemp >= 20 && rolltemp < 30) { //20 deg
-      refDisp.drawBitmap(0, y, D2p20R, 32, 32, WHITE);
-    } else if (rolltemp >= 30 && rolltemp < 40) { //30 deg
-      refDisp.drawBitmap(0, y, D2p30R, 32, 32, WHITE);
-    } else if (rolltemp >= 40 && rolltemp < 50) { //40 deg
-      refDisp.drawBitmap(0, y, D2p40R, 32, 32, WHITE);
-    } else if (rolltemp >= 50 && rolltemp < 60) { //50 deg
-      refDisp.drawBitmap(0, y, D2p50R, 32, 32, WHITE);
-    } else if (rolltemp >= 60 && rolltemp < 70) { //60 deg
-      refDisp.drawBitmap(0, y, D2p60R, 32, 32, WHITE);
-      // WARNING CASE
-    } else if (rolltemp < -60 || rolltemp > 60) { // WARNING!
-      if (icons) {
-        refDisp.drawBitmap(0, y, D2aWARN, 32, 32, WHITE);
-      }
-    }
 
   } else {
     //ALL OTHER SENSORS
@@ -1178,56 +1053,7 @@ bool readCoolantLevel(uint8_t sensor, uint8_t index) {
   return ((bool)processConstraints(DIVISOR / 2, CoolantLevel, CoolantLevel, index));
 }
 
- int readADXL(uint8_t index, bool axis) {  // false is Y true is X
 
-  sensors_event_t event;
-  if(!accel.getEvent(&event)) {
-	  return(0);
-  }
-  double ax, ay, az;
-
-  ax = event.acceleration.x;
-  ay = event.acceleration.y;
-  az = event.acceleration.z;
-
-  //  we don't care about yaw - leaving code commented here for reference
-  //  double zAngle = atan( sqrt(square(ax) + square(ay)) / az);
-  //  zAngle *= 180.00;
-  //  zAngle /= 3.141592;
-  if (axis) {
-    double xAngle = atan( ax / (sqrt(sq(ay) + sq(az))));
-    xAngle *= 180.00;
-    xAngle /= 3.141592;
-    return (int(xAngle));
-  }
-  double yAngle = atan( ay / (sqrt(sq(ax) + sq(az))));
-  yAngle *= 180.00;
-  yAngle /= 3.141592;
-  return (int(yAngle));
-}
-
- int readHMC5883(uint8_t index) {
-   sensors_event_t event;
-  if(!mag.getEvent(&event)) {
-	  return(0);
-  }
-  
-  float heading = atan2(event.magnetic.y, event.magnetic.x);
-  float declinationAngle = 0.025;
-  heading += declinationAngle;
-
-  // Correct for when signs are reversed.
-  if (heading < 0)
-    heading += 2 * PI;
-
-  // Check for wrap due to addition of declination.
-  if (heading > 2 * PI)
-    heading -= 2 * PI;
-
-  // Convert radians to degrees for readability.
-  float headingDegrees = heading * 180 / M_PI;
-  return (int(headingDegrees));
-}
 
 // MAX31856 SPI CODE
 
@@ -1293,3 +1119,6 @@ double MAXReadTemperature(int Pin) {
   // Return the temperature
   return (temperature);
 }
+
+
+

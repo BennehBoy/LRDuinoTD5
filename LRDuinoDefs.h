@@ -1,7 +1,7 @@
 #ifndef LRDuinoDefs_h
 #define LRDuinoDefs_h
 
-#define NUM_DISPLAYS 8
+#define NUM_DISPLAYS 1
 #define INTERVAL 	250
 #define OBDFAST		400
 #define OBDSLOW		600
@@ -35,19 +35,8 @@
 #define SD_CS		PA13     // 22
 // PA12 - 23 is USB
 // PA11 - 24 is USB
-#define MUX_OLEDCS_1 0
-#define MUX_OLEDCS_2 1
-#define MUX_OLEDCS_3 2
-#define MUX_OLEDCS_4 3
-#define MUX_OLEDCS_5 4
-#define MUX_OLEDCS_6 5
-#define MUX_OLEDCS_7 6
-#define MUX_OLEDCS_8 7
-#define MUX_A0	PB5 //17
-#define MUX_A1	PB4 //18
-#define MUX_A2	PB3 //19
-#define MUX_A3	PA15 //20
-#define MUX_E1	PA14 //21
+#define OLEDCS_1	PB5 //17
+
 
 #define OLED_RESET  PA8		//27
 #define OLED_DC     PB15	//28

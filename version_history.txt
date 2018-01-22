@@ -1,3 +1,8 @@
+Version 0.06
+Simplified to 1 OLED screen - lowers starting bar
+Removed MUX154
+Removed i2C devices (compass, 6 axis - these were too strongly influenced by iron in the vehicle)
+
 Version 0.0.5
 Updated to work with ArduinoMenu 4 (requires use of a bogus Serial stream)
 
