@@ -1,5 +1,5 @@
 // LRDuino by Ben Anderson
-// Version 0.06  (STM32 Only)
+// Version 0.07  (STM32 Only)
 
 #include "LRDuinoDefs.h"
 #include <Adafruit_SSD1306.h>
@@ -60,26 +60,27 @@ typedef struct
   int sensewarnhivals;
   int sensewarnlowvals;
   const char sensename[13];
+  bool hidden;
 } SingleSensor;
 
 SingleSensor Sensors[16] = {
  //active  master slaveID senseorder	warnstatus    sensefault senseglyphs sensevals  units maxvals minvals peakvals warnhivals warnlovals
-  {true,   true,  99,     0,			false,        0,         trbBMP,     0,         1,    32,     0,      0,       29,        -999,	"Boost"}, 		// Boost
-  {true,   true,  99,     0,			false,        0,         tboxBMP,    0,         0,    150,    -40,    -40,     140,       -999,	"Tbox Temp"}, 	// Transfer Box Temp
-  {true,   true,  99,     0,			false,        0,         egtBMP,     0,         0,    900,    -40,    -40,     750,       -999,	"EGT"}, 		// EGT
-  {true,   true,  4,      0,			false,        0,         eopBMP,     0,         1,    72,     0,      0,       60,        20,	"Oil Pressure"},// Oil Pressure
-  {true,   false, 99,     0,			false,        0,         eotBMP,     0,         0,    150,    -40,    -40,     100,       -999,	"Oil Temp"}, 	// Oil Temp
-  {true,   true,  11,     0,			false,        0,         coollev,    0,         2,    1,      0,      1,       999,       1,	"Coolant Lvl"}, // Coolant Level
-  {false,   true,  7,      0,			false,        0,         D2a0,       0,         3,    45,     -45,    0,       30,        -30,	"Roll"},  		// Vehicle Roll
-  {false,   false, 99,     0,			false,        0,         D2p0,       0,         3,    60,     -60,    0,       45,        -45,	"Pitch"},  		// Vehicle Pitch
-  {false,   true,  99,     0,			false,        0,         compass,    0,         3,    360,    0,      0,       999,       -999,	"Compass"}, 	// Magnetometer
-  {true,   true,  99,     0,			false,        0,         Gauge,      0,         4,    4500,   0,      0,       4500,      600,	"RPM (OBD)"},  	// RPM
-  {true,   true,  99,     0,			false,        0,         Gauge,      0,         5,    100,    -30,    0,       100,       -30,	"Speed (OBD)"}, // Roadspeed
-  {true,   false,  99,     0,			false,        0,         cooltmp,    0,         0,    130,    -30,    0,       100,       -999,	"ECT (OBD)"},   // Coolant
-  {true,   true,  99,     0,			false,        0,         OBDII,   	 0,         7,    16,     0,	  0,       15,        11,	"BtV (OBD)"},   // Battery Voltage
-  {false,   true,  99,     0,			true,        0,         OBDII,   	 0,         0,    100,    -40,	  0,       50,        -999,	"InT (OBD)"},   // Inlet Temperature
-  {false,   true,  99,     0,			true,        0,         OBDII,   	 0,         0,    100,    -40,	  0,       75,        -999,	"FlT (OBD)"},   // Fuel Temperature
-  {false,   true,  99,     0,			true,        0,         OBDII,   	 0,         1,    20,     0,	  0,       16,        12,	"AAP (OBD)"}    // Ambient Pressure
+  {true,   true,  99,     0,			false,        0,         trbBMP,     0,         1,    32,     0,      0,       29,        -999,	  "Boost",        false}, // Boost
+  {true,   true,  99,     0,			false,        0,         tboxBMP,    0,         0,    150,    -40,    -40,     140,       -999,	  "Tbox Temp",    false}, // Transfer Box Temp
+  {true,   true,  99,     0,			false,        0,         egtBMP,     0,         0,    900,    -40,    -40,     750,       -999,	  "EGT",          false}, // EGT
+  {true,   true,  4,      0,			false,        0,         eopBMP,     0,         1,    72,     0,      0,       60,        20,	    "Oil Pressure", false}, // Oil Pressure
+  {true,   false, 99,     0,			false,        0,         eotBMP,     0,         0,    150,    -40,    -40,     100,       -999,	  "Oil Temp",     false}, // Oil Temp
+  {true,   true,  11,     0,			false,        0,         coollev,    0,         2,    1,      0,      1,       999,       1,	    "Coolant Lvl",  false}, // Coolant Level
+  {false,   true,  7,      0,			false,        0,         D2a0,       0,         3,    45,     -45,    0,       30,        -30,	  "Roll",         false}, // Vehicle Roll
+  {false,   false, 99,     0,			false,        0,         D2p0,       0,         3,    60,     -60,    0,       45,        -45,	  "Pitch",        false}, // Vehicle Pitch
+  {false,   true,  99,     0,			false,        0,         compass,    0,         3,    360,    0,      0,       999,       -999,	  "Compass",      false}, // Magnetometer
+  {true,   true,  99,     0,			false,        0,         Gauge,      0,         4,    4500,   0,      0,       4500,      600,	  "RPM (OBD)",    false}, // RPM
+  {true,   true,  99,     0,			false,        0,         Gauge,      0,         5,    100,    -30,    0,       100,       -30,	  "Speed (OBD)",  false}, // Roadspeed
+  {true,   false,  99,     0,			false,        0,         cooltmp,    0,         0,    130,    -30,    0,       100,       -999,	  "ECT (OBD)",    false}, // Coolant
+  {true,   true,  99,     0,			false,        0,         OBDII,   	 0,         7,    16,     0,	    0,       15,        11,	    "BtV (OBD)",    false}, // Battery Voltage
+  {false,   true,  99,     0,			true,         0,         OBDII,   	 0,         0,    100,    -40,	  0,       50,        -999,	  "InT (OBD)",    false}, // Inlet Temperature
+  {false,   true,  99,     0,			true,         0,         OBDII,   	 0,         0,    100,    -40,	  0,       75,        -999,	  "FlT (OBD)",    false}, // Fuel Temperature
+  {false,   true,  99,     0,			true,         0,         OBDII,   	 0,         1,    20,     0,	    0,       16,        12,	    "AAP (OBD)",    false}  // Ambient Pressure
 };
 
 uint8_t sensecount = 0;
@@ -124,59 +125,59 @@ MENU(ecuMenu,"ECU",doNothing,anyEvent,wrapStyle
   ,EXIT("<Back")
 );
 
-TOGGLE(Sensors[0].senseactive,sensor0Toggle, "Boost: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+TOGGLE(Sensors[0].hidden,sensor0Toggle, "Boost: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
   ,VALUE("On",true,doNothing,noEvent)
   ,VALUE("Off",false,doNothing,noEvent)
 );
-TOGGLE(Sensors[1].senseactive,sensor1Toggle, "Tbox Temp: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+TOGGLE(Sensors[1].hidden,sensor1Toggle, "Tbox Temp: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
   ,VALUE("On",true,doNothing,noEvent)
   ,VALUE("Off",false,doNothing,noEvent)
 );
-TOGGLE(Sensors[2].senseactive,sensor2Toggle, "EGT: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+TOGGLE(Sensors[2].hidden,sensor2Toggle, "EGT: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
   ,VALUE("On",true,doNothing,noEvent)
   ,VALUE("Off",false,doNothing,noEvent)
 );
-TOGGLE(Sensors[3].senseactive,sensor3Toggle, "Oil Press/Tmp: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+TOGGLE(Sensors[3].hidden,sensor3Toggle, "Oil Press/Tmp: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
   ,VALUE("On",true,doNothing,noEvent)
   ,VALUE("Off",false,doNothing,noEvent)
 );
-TOGGLE(Sensors[5].senseactive,sensor5Toggle, "Coolent Lev: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+TOGGLE(Sensors[5].hidden,sensor5Toggle, "Coolent Lev: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
   ,VALUE("On",true,doNothing,noEvent)
   ,VALUE("Off",false,doNothing,noEvent)
 );
-TOGGLE(Sensors[6].senseactive,sensor6Toggle, "Pitch/Roll: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+TOGGLE(Sensors[6].hidden,sensor6Toggle, "Pitch/Roll: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
   ,VALUE("On",true,doNothing,noEvent)
   ,VALUE("Off",false,doNothing,noEvent)
 );
-TOGGLE(Sensors[8].senseactive,sensor8Toggle, "Compass: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+TOGGLE(Sensors[8].hidden,sensor8Toggle, "Compass: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
   ,VALUE("On",true,doNothing,noEvent)
   ,VALUE("Off",false,doNothing,noEvent)
 );
-TOGGLE(Sensors[9].senseactive,sensor9Toggle, "RPM (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+TOGGLE(Sensors[9].hidden,sensor9Toggle, "RPM (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
   ,VALUE("On",true,doNothing,noEvent)
   ,VALUE("Off",false,doNothing,noEvent)
 );
-TOGGLE(Sensors[10].senseactive,sensor10Toggle, "Speed (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+TOGGLE(Sensors[10].hidden,sensor10Toggle, "Speed (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
   ,VALUE("On",true,doNothing,noEvent)
   ,VALUE("Off",false,doNothing,noEvent)
 );
-TOGGLE(Sensors[11].senseactive,sensor11Toggle, "ECT (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+TOGGLE(Sensors[11].hidden,sensor11Toggle, "ECT (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
   ,VALUE("On",true,doNothing,noEvent)
   ,VALUE("Off",false,doNothing,noEvent)
 );
-TOGGLE(Sensors[12].senseactive,sensor12Toggle, "BtV (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+TOGGLE(Sensors[12].hidden,sensor12Toggle, "BtV (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
   ,VALUE("On",true,doNothing,noEvent)
   ,VALUE("Off",false,doNothing,noEvent)
 );
-TOGGLE(Sensors[13].senseactive,sensor13Toggle, "InT (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+TOGGLE(Sensors[13].hidden,sensor13Toggle, "InT (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
   ,VALUE("On",true,doNothing,noEvent)
   ,VALUE("Off",false,doNothing,noEvent)
 );
-TOGGLE(Sensors[14].senseactive,sensor14Toggle, "FlT (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+TOGGLE(Sensors[14].hidden,sensor14Toggle, "FlT (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
   ,VALUE("On",true,doNothing,noEvent)
   ,VALUE("Off",false,doNothing,noEvent)
 );
-TOGGLE(Sensors[15].senseactive,sensor15Toggle, "AAP (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
+TOGGLE(Sensors[15].hidden,sensor15Toggle, "AAP (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
   ,VALUE("On",true,doNothing,noEvent)
   ,VALUE("Off",false,doNothing,noEvent)
 );
@@ -277,13 +278,12 @@ void setup()   {
   // Ensure #define ENABLE_SPI_TRANSACTIONS 1 is set in SdFatConfig.h
   if (!sd.begin(SD_CS, SD_SCK_MHZ(8)))
   {
-	  
-	display1.setTextColor(WHITE);
-	display1.setTextSize(1);
+    display1.setTextColor(WHITE);
+	  display1.setTextSize(1);
     display1.setCursor(0, 0); 
     display1.println("SD init failed...   ");
-	display1.display();
-	delay(1000);
+	  display1.display();
+	  delay(1000);
     sd_present = false;
   }
   else
@@ -337,7 +337,7 @@ void disableOBDSensors(void) {
 void getSensecount(void) {
 	sensecount=0;
 	for (uint8_t thisSensor = 0; thisSensor < totalsensors; thisSensor++) {
-		if (Sensors[thisSensor].senseactive == true && Sensors[thisSensor].master == true) { // don't count slaves
+		if (Sensors[thisSensor].senseactive == true && Sensors[thisSensor].master == true && Sensors[thisSensor].hidden == false) { // don't count slaves
 			sensecount++;
 		}
 	}
@@ -448,40 +448,40 @@ void loop() {
   // left rotation requested
   if (btn_left.sense() == buttons_debounce) { 
     
-	if (currentMillis - previousMillis > BUT_DELAY) {
+	  if (currentMillis - previousMillis > BUT_DELAY) {
 	
-		rotation = rotation + 1; // rotate the screens if the button was pressed
-		previousMillis = previousMillis - (INTERVAL + 1); // force an update of the screens.
+		  rotation = rotation + 1; // rotate the screens if the button was pressed
+		  previousMillis = previousMillis - (INTERVAL + 1); // force an update of the screens.
 		
-		if (sensecount < NUM_DISPLAYS) {
-			if (rotation == NUM_DISPLAYS) { // if we have less than 8 sensors, keep rotating until we hit the screen count
-				rotation = 0;
-			}
-		} else {
-			if (rotation == sensecount) { // otherwise rotate until we hit the last sensor
-				rotation = 0;
-			}
-		}
+		  if (sensecount < NUM_DISPLAYS) {
+			  if (rotation == NUM_DISPLAYS) { // if we have less than 8 sensors, keep rotating until we hit the screen count
+				  rotation = 0;
+			  }
+		  } else {
+			  if (rotation == sensecount) { // otherwise rotate until we hit the last sensor
+				  rotation = 0;
+			  }
+		  }
     }
   }
   
   // right rotation requested
   if (btn_right.sense() == buttons_debounce) { 
     
-	if (currentMillis - previousMillis > BUT_DELAY) {
+	  if (currentMillis - previousMillis > BUT_DELAY) {
 	
-		rotation = rotation - 1; // rotate the screens if the button was pressed
-		previousMillis = previousMillis - (INTERVAL + 1); // force an update of the screens.
+		  rotation = rotation - 1; // rotate the screens if the button was pressed
+		  previousMillis = previousMillis - (INTERVAL + 1); // force an update of the screens.
 		
-		if (sensecount < NUM_DISPLAYS) {
-			if (rotation == 0) { // if we have less than 8 sensors, keep rotating until we hit the screen count
-				rotation = NUM_DISPLAYS;
-			}
-		} else {
-			if (rotation == 0) { // otherwise rotate until we hit the last sensor
-				rotation = sensecount;
-			}
-		}
+		  if (sensecount < NUM_DISPLAYS) {
+			  if (rotation == 0) { // if we have less than 8 sensors, keep rotating until we hit the screen count
+			  	rotation = NUM_DISPLAYS;
+			  }
+		  } else {
+			  if (rotation == 0) { // otherwise rotate until we hit the last sensor
+				  rotation = sensecount;
+			  }
+		  }
     }
   }
   
@@ -489,21 +489,18 @@ void loop() {
     // save the last time we updated
     previousMillis = currentMillis;
 
-  if(td5.ecuIsConnected())
-  {
-    // keep ecu alive
-    if(td5.getLastReceivedPidElapsedTime() > KEEP_ALIVE_TIME)
-    {
-      td5.getPid(&pidKeepAlive);  
-    }
+    if(td5.ecuIsConnected())  {
+      // keep ecu alive
+      if(td5.getLastReceivedPidElapsedTime() > KEEP_ALIVE_TIME) {
+        td5.getPid(&pidKeepAlive);  
+      }
 
-    // shutdown in case of too many frames lost
-    if (td5.getConsecutiveLostFrames() > 3)
-    {
-		disableOBDSensors();
-		td5.disconnectFromEcu();
+      // shutdown in case of too many frames lost
+      if (td5.getConsecutiveLostFrames() > 3) {
+        disableOBDSensors();
+        td5.disconnectFromEcu();
+      }
     }
-  }
 	
     // SENSOR READING
 
@@ -556,71 +553,71 @@ void loop() {
     }
 
     if (Sensors[9].senseactive) {
-		if (td5.ecuIsConnected()) {
-			if(td5.getPid(&pidRPM) > 0) {
-				Sensors[9].sensevals = pidRPM.getlValue(); // RPM
-			}
-		}
+		  if (td5.ecuIsConnected()) {
+			  if(td5.getPid(&pidRPM) > 0) {
+				  Sensors[9].sensevals = pidRPM.getlValue(); // RPM
+			  }
+		  }
     }
   
    	if (Sensors[10].senseactive) {
-		if (td5.ecuIsConnected()) {
-			if(td5.getPid(&pidVehicleSpeed) > 0) {			
-				Sensors[10].sensevals = pidVehicleSpeed.getbValue(0); // Speed
-			}
-		}
-	} 
+		  if (td5.ecuIsConnected()) {
+			  if(td5.getPid(&pidVehicleSpeed) > 0) {			
+				  Sensors[10].sensevals = pidVehicleSpeed.getbValue(0); // Speed
+			  }
+		  }
+	  } 
 		
   	if (Sensors[11].senseactive) {
-		if (td5.ecuIsConnected()) {
-			if(td5.getPid(&pidTemperatures) > 0) {
-				Sensors[11].sensevals = pidTemperatures.getfValue(0); // Coolant Temp
-			}
-		}
-	audibleWARN(11);
-	} 	
+		  if (td5.ecuIsConnected()) {
+			  if(td5.getPid(&pidTemperatures) > 0) {
+				  Sensors[11].sensevals = pidTemperatures.getfValue(0); // Coolant Temp
+			  }
+		  }
+	    audibleWARN(11);
+	  } 	
 
   	if (Sensors[12].senseactive) {
-		if (td5.ecuIsConnected()) {
-			if(td5.getPid(&pidBatteryVoltage) > 0) {
-				Sensors[12].sensevals = pidBatteryVoltage.getfValue(); // Battery Voltage
-			}
-		}
-	audibleWARN(12);
-	} 	
+		  if (td5.ecuIsConnected()) {
+			  if(td5.getPid(&pidBatteryVoltage) > 0) {
+				  Sensors[12].sensevals = pidBatteryVoltage.getfValue(); // Battery Voltage
+			  }
+		  }
+	    audibleWARN(12);
+	  } 	
 
   	if (Sensors[13].senseactive) {
-		if (td5.ecuIsConnected()) {
-			if(td5.getPid(&pidTemperatures) > 0) {
-				Sensors[13].sensevals = pidTemperatures.getfValue(1); // Inlet Temp
-			}
-		}
-	audibleWARN(13);
-	} 
+		  if (td5.ecuIsConnected()) {
+			  if(td5.getPid(&pidTemperatures) > 0) {
+				  Sensors[13].sensevals = pidTemperatures.getfValue(1); // Inlet Temp
+			  }
+		  }
+	    audibleWARN(13);
+	  } 
 	
   	if (Sensors[14].senseactive) {
-		if (td5.ecuIsConnected()) {
-			if(td5.getPid(&pidTemperatures) > 0) {
-				Sensors[14].sensevals = pidTemperatures.getfValue(3); // Fuel Temp
-			}
-		}
-	audibleWARN(14);
-	}
+		  if (td5.ecuIsConnected()) {
+			  if(td5.getPid(&pidTemperatures) > 0) {
+				  Sensors[14].sensevals = pidTemperatures.getfValue(3); // Fuel Temp
+			  }
+		  }
+	    audibleWARN(14);
+	  }
 	
   	if (Sensors[15].senseactive) {
-		if (td5.ecuIsConnected()) {
-			if(td5.getPid(&pidAmbientPressure) > 0) {
-				Sensors[15].sensevals = pidAmbientPressure.getfValue(1); // AAP
-			}
-		}
-	audibleWARN(15);
-	} 
+		  if (td5.ecuIsConnected()) {
+			  if(td5.getPid(&pidAmbientPressure) > 0) {
+				  Sensors[15].sensevals = pidAmbientPressure.getfValue(1); // AAP
+			  }
+		  }
+	  audibleWARN(15);
+	  } 
 
 	if(dataLog == true) {
 		writeDatalogline();  // write out the last readings if we're logging
 	}
 	
-    // DRAW DISPLAYS
+  // DRAW DISPLAYS
   
 	if (!inMenu) {
 		drawDISPLAY(display1, 1);
@@ -906,7 +903,7 @@ int8_t processRotation(uint8_t location) { // this is used to shift our array of
   
   // now we populate the array with the active sensors
   for (uint8_t locthisSensor = 0; locthisSensor < totalsensors; locthisSensor++) {
-    if (Sensors[locthisSensor].senseactive == true && Sensors[locthisSensor].master == true) {
+    if (Sensors[locthisSensor].senseactive == true && Sensors[locthisSensor].master == true && Sensors[locthisSensor].hidden == false) {
       pos[count] = locthisSensor;
       count++;
     }
@@ -991,13 +988,14 @@ int readPress(uint8_t sensor, uint8_t index) {
   int rawval;
   long kpaval;
   long oilpress;
-  
-  //mV per mB = 2640mv/6894mb  = 0.383  (this is for 3.3v STM32)
-  //mv per ADC = 3300mv/4096 = 0.8056
-  //mb per ADC = 2.1034
+  //100 psi Chinese Transducer
+  //Sensor slope = MaxV - MinV / MaxP - MinP    ==   3000 - 333 / 6894 - 0   === 0.386 mv per millibar
+  //mv per ADC = 3300mv/4095 = 0.80586
+  //mb per ADC = 0.80586/0.386   == 2.0877
+  //offset = 330/0.80586 = 409 ADC's
   rawval = analogRead(sensor);       // Read MAP sensor raw value on analog port 0
-  kpaval = (rawval * 2.1034)/10;             // convert to kpa
-  oilpress = kpaval * 0.145038 - 12.5;  // Convert to psi & subtract atmospheric 12psi (sesnor appears to have ~2.5spi offset from reality)
+  kpaval = ((rawval-409) * 2.0877)/10;             // convert to kpa
+  oilpress = (kpaval * 0.145038); Convert to psi - sensor is already relative to atmospheric
   // process any faults
   return (processConstraints(DIVISOR / 100, rawval, int(oilpress), index));
 }

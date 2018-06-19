@@ -1,3 +1,7 @@
+Version 0.07
+Changed logic so that inactive sensors CANNOT be made active using the menu system - new .hidden property added
+Calibrated Chinese 100psi sensors in 'readpress' - these can be used for oil, fuel, generic pressure.  These are NOT absolute pressure sensors and read relative to atmospheric pressure.
+
 Version 0.06
 Simplified to 1 OLED screen - lowers starting bar
 Removed MUX154
