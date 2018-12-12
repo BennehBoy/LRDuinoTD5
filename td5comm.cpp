@@ -23,9 +23,11 @@ Td5Comm.cpp -
 
 #ifdef ARDUINO_BLACK_F407VE
   #include "LRDuinoDefs407VE.h"
+  #define obdSerial Serial1
 #endif
 #ifdef BOARD_maple_mini
   #include "LRDuinoDefsMM.h"
+  #define obdSerial Serial3
 #endif
 
 #include "td5strings.h"
@@ -33,8 +35,6 @@ Td5Comm.cpp -
 #include "keygen.h"
 
 static float ambientPressure = 100.0;
-
-#define obdSerial Serial1
 
 const unsigned char pid_0x00[] = { 0x81, 0x13, 0xF7, 0x81, 0x0C };        // INIT_FRAME
 const unsigned char pid_0x01[] = { 0x02, 0x10, 0xA0, 0x00 };              // START_DIAG
