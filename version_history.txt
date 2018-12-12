@@ -1,3 +1,13 @@
+Version 0.08
+Sensor presets broken out into separate header file
+Compatible with latest Adafruit SSD1306 library (1.2.9 at time of writing)
+Fixed inverted naming of sensor hiding states
+Updated code so will compile against:
+	Maple Mini using core: https://github.com/rogerclarkmelbourne/Arduino_STM32
+	Black 407VET6 using core: https://github.com/stm32duino/Arduino_Core_STM32
+	
+	Black 407VET6 - datalogging is not functional at this time.
+
 Version 0.07
 Changed logic so that inactive sensors CANNOT be made active using the menu system - new .hidden property added
 Calibrated Chinese 100psi sensors in 'readpress' - these can be used for oil, fuel, generic pressure.  These are NOT absolute pressure sensors and read relative to atmospheric pressure.

@@ -18,15 +18,23 @@ Td5Comm.cpp -
  */
 
 #include <Arduino.h>
+
 #include "td5comm.h"
-#include "LRDuinoDefs.h"
+
+#ifdef ARDUINO_BLACK_F407VE
+  #include "LRDuinoDefs407VE.h"
+#endif
+#ifdef BOARD_maple_mini
+  #include "LRDuinoDefsMM.h"
+#endif
+
 #include "td5strings.h"
 //#include "td5hmi.h"
 #include "keygen.h"
 
 static float ambientPressure = 100.0;
 
-#define obdSerial Serial3
+#define obdSerial Serial1
 
 const unsigned char pid_0x00[] = { 0x81, 0x13, 0xF7, 0x81, 0x0C };        // INIT_FRAME
 const unsigned char pid_0x01[] = { 0x02, 0x10, 0xA0, 0x00 };              // START_DIAG
@@ -740,6 +748,3 @@ byte Td5Pid::getResponseByte(byte pos)
 {
   return responseFrame[pos];    
 }
-
-
-

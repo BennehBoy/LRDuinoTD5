@@ -19,10 +19,15 @@ Td5strings.h -
 #ifndef Td5Strings_h
 #define Td5Strings_h
 
-#include "LRDuinoDefs.h"
+#ifdef ARDUINO_BLACK_F407VE
+  #include "LRDuinoDefs407VE.h"
+#endif
+
+#ifdef ARDUINO_maple_mini
+  #include "LRDuinoDefsMM.h"
+#endif
 
 #ifdef _FAULT_CODES_STRINGS_
 extern const char *fault_code[];
 #endif
 #endif
-

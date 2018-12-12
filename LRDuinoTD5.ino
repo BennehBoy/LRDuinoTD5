@@ -1,10 +1,25 @@
 // LRDuino by Ben Anderson
-// Version 0.07  (STM32 Only)
+// Version 0.08  (STM32 Only)
 
-#include "LRDuinoDefs.h"
-#include <Adafruit_SSD1306.h>
 #include <SPI.h>
-#include <SdFat.h>
+
+#ifdef ARDUINO_BLACK_F407VE
+#include "LRDuinoDefs407VE.h"
+  #include <STM32SD.h>
+  #ifndef SD_DETECT_PIN
+    #define SD_DETECT_PIN SD_DETECT_NONE
+  #endif
+  File sdLogFile;
+#endif
+
+#ifdef BOARD_maple_mini
+  #include "LRDuinoDefsMM.h"
+  #include <SdFat.h>
+  SdFat sd;
+  SdFile sdLogFile;
+#endif
+
+#include <Adafruit_SSD1306.h>
 #include "LRDuinoGFX.h"
 #include <Fonts/FreeSansBoldOblique12pt7b.h>
 #include <Fonts/FreeSansBoldOblique24pt7b.h>
@@ -24,9 +39,6 @@ byte RegisterAddresses[] = {0x00,  0x01,   0x02,   0x03,   0x04,   0x04,     0x0
 
 Td5Comm td5;
 
-SdFat sd;
-SdFile sdLogFile;
-
 //HARDWARE SPI
 Adafruit_SSD1306 display1(OLED_DC, OLED_RESET, OLEDCS_1);
 
@@ -41,50 +53,12 @@ Button btn_left(LEFTBUT, LOW);
 Button btn_right(RIGHTBUT, LOW);
 Button btn_enter(SELBUT, LOW);
 
-// This is all the parameters and variables for our sensors
+#include "td5sensors.h"
 
-typedef struct
-{
-  bool senseactive;
-  bool master;
-  uint8_t slaveID;
-  uint8_t senseorder;
-  bool warnstatus;
-  uint8_t sensefault;
-  const unsigned char* senseglyphs;
-  int sensevals;
-  const uint8_t senseunits;
-  const int sensemaxvals;
-  const int8_t senseminvals;
-  int sensepeakvals;
-  int sensewarnhivals;
-  int sensewarnlowvals;
-  const char sensename[13];
-  bool hidden;
-} SingleSensor;
-
-SingleSensor Sensors[16] = {
- //active  master slaveID senseorder	warnstatus    sensefault senseglyphs sensevals  units maxvals minvals peakvals warnhivals warnlovals
-  {true,   true,  99,     0,			false,        0,         trbBMP,     0,         1,    32,     0,      0,       29,        -999,	  "Boost",        false}, // Boost
-  {true,   true,  99,     0,			false,        0,         tboxBMP,    0,         0,    150,    -40,    -40,     140,       -999,	  "Tbox Temp",    false}, // Transfer Box Temp
-  {true,   true,  99,     0,			false,        0,         egtBMP,     0,         0,    900,    -40,    -40,     750,       -999,	  "EGT",          false}, // EGT
-  {true,   true,  4,      0,			false,        0,         eopBMP,     0,         1,    72,     0,      0,       60,        20,	    "Oil Pressure", false}, // Oil Pressure
-  {true,   false, 99,     0,			false,        0,         eotBMP,     0,         0,    150,    -40,    -40,     100,       -999,	  "Oil Temp",     false}, // Oil Temp
-  {true,   true,  11,     0,			false,        0,         coollev,    0,         2,    1,      0,      1,       999,       1,	    "Coolant Lvl",  false}, // Coolant Level
-  {false,   true,  7,      0,			false,        0,         D2a0,       0,         3,    45,     -45,    0,       30,        -30,	  "Roll",         false}, // Vehicle Roll
-  {false,   false, 99,     0,			false,        0,         D2p0,       0,         3,    60,     -60,    0,       45,        -45,	  "Pitch",        false}, // Vehicle Pitch
-  {false,   true,  99,     0,			false,        0,         compass,    0,         3,    360,    0,      0,       999,       -999,	  "Compass",      false}, // Magnetometer
-  {true,   true,  99,     0,			false,        0,         Gauge,      0,         4,    4500,   0,      0,       4500,      600,	  "RPM (OBD)",    false}, // RPM
-  {true,   true,  99,     0,			false,        0,         Gauge,      0,         5,    100,    -30,    0,       100,       -30,	  "Speed (OBD)",  false}, // Roadspeed
-  {true,   false,  99,     0,			false,        0,         cooltmp,    0,         0,    130,    -30,    0,       100,       -999,	  "ECT (OBD)",    false}, // Coolant
-  {true,   true,  99,     0,			false,        0,         OBDII,   	 0,         7,    16,     0,	    0,       15,        11,	    "BtV (OBD)",    false}, // Battery Voltage
-  {false,   true,  99,     0,			true,         0,         OBDII,   	 0,         0,    100,    -40,	  0,       50,        -999,	  "InT (OBD)",    false}, // Inlet Temperature
-  {false,   true,  99,     0,			true,         0,         OBDII,   	 0,         0,    100,    -40,	  0,       75,        -999,	  "FlT (OBD)",    false}, // Fuel Temperature
-  {false,   true,  99,     0,			true,         0,         OBDII,   	 0,         1,    20,     0,	    0,       16,        12,	    "AAP (OBD)",    false}  // Ambient Pressure
-};
+// Insert code to read settings in here, and also set default states of sensors to hidden if hw is not present
+// end settings reading section
 
 uint8_t sensecount = 0;
-const uint8_t totalsensors = 16; //this is the actual number of definitions above
 uint8_t rotation = 0; // incremented by 1 with each button press - it's used to tell the drawdisplay functions which sensor data they should output.
 
 // the follow variable is a long because the time, measured in miliseconds,
@@ -126,60 +100,60 @@ MENU(ecuMenu,"ECU",doNothing,anyEvent,wrapStyle
 );
 
 TOGGLE(Sensors[0].hidden,sensor0Toggle, "Boost: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",true,doNothing,noEvent)
-  ,VALUE("Off",false,doNothing,noEvent)
+  ,VALUE("On",false,doNothing,noEvent)
+  ,VALUE("Off",true,doNothing,noEvent)
 );
 TOGGLE(Sensors[1].hidden,sensor1Toggle, "Tbox Temp: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",true,doNothing,noEvent)
-  ,VALUE("Off",false,doNothing,noEvent)
+  ,VALUE("On",false,doNothing,noEvent)
+  ,VALUE("Off",true,doNothing,noEvent)
 );
 TOGGLE(Sensors[2].hidden,sensor2Toggle, "EGT: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",true,doNothing,noEvent)
-  ,VALUE("Off",false,doNothing,noEvent)
+  ,VALUE("On",false,doNothing,noEvent)
+  ,VALUE("Off",true,doNothing,noEvent)
 );
 TOGGLE(Sensors[3].hidden,sensor3Toggle, "Oil Press/Tmp: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",true,doNothing,noEvent)
-  ,VALUE("Off",false,doNothing,noEvent)
+  ,VALUE("On",false,doNothing,noEvent)
+  ,VALUE("Off",true,doNothing,noEvent)
 );
 TOGGLE(Sensors[5].hidden,sensor5Toggle, "Coolent Lev: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",true,doNothing,noEvent)
-  ,VALUE("Off",false,doNothing,noEvent)
+  ,VALUE("On",false,doNothing,noEvent)
+  ,VALUE("Off",true,doNothing,noEvent)
 );
 TOGGLE(Sensors[6].hidden,sensor6Toggle, "Pitch/Roll: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",true,doNothing,noEvent)
-  ,VALUE("Off",false,doNothing,noEvent)
+  ,VALUE("On",false,doNothing,noEvent)
+  ,VALUE("Off",true,doNothing,noEvent)
 );
 TOGGLE(Sensors[8].hidden,sensor8Toggle, "Compass: ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",true,doNothing,noEvent)
-  ,VALUE("Off",false,doNothing,noEvent)
+  ,VALUE("On",false,doNothing,noEvent)
+  ,VALUE("Off",true,doNothing,noEvent)
 );
 TOGGLE(Sensors[9].hidden,sensor9Toggle, "RPM (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",true,doNothing,noEvent)
-  ,VALUE("Off",false,doNothing,noEvent)
+  ,VALUE("On",false,doNothing,noEvent)
+  ,VALUE("Off",true,doNothing,noEvent)
 );
 TOGGLE(Sensors[10].hidden,sensor10Toggle, "Speed (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",true,doNothing,noEvent)
-  ,VALUE("Off",false,doNothing,noEvent)
+  ,VALUE("On",false,doNothing,noEvent)
+  ,VALUE("Off",true,doNothing,noEvent)
 );
 TOGGLE(Sensors[11].hidden,sensor11Toggle, "ECT (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",true,doNothing,noEvent)
-  ,VALUE("Off",false,doNothing,noEvent)
+  ,VALUE("On",false,doNothing,noEvent)
+  ,VALUE("Off",true,doNothing,noEvent)
 );
 TOGGLE(Sensors[12].hidden,sensor12Toggle, "BtV (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",true,doNothing,noEvent)
-  ,VALUE("Off",false,doNothing,noEvent)
+  ,VALUE("On",false,doNothing,noEvent)
+  ,VALUE("Off",true,doNothing,noEvent)
 );
 TOGGLE(Sensors[13].hidden,sensor13Toggle, "InT (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",true,doNothing,noEvent)
-  ,VALUE("Off",false,doNothing,noEvent)
+  ,VALUE("On",false,doNothing,noEvent)
+  ,VALUE("Off",true,doNothing,noEvent)
 );
 TOGGLE(Sensors[14].hidden,sensor14Toggle, "FlT (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",true,doNothing,noEvent)
-  ,VALUE("Off",false,doNothing,noEvent)
+  ,VALUE("On",false,doNothing,noEvent)
+  ,VALUE("Off",true,doNothing,noEvent)
 );
 TOGGLE(Sensors[15].hidden,sensor15Toggle, "AAP (OBD): ",getSensecount,enterEvent,wrapStyle//,doExit,enterEvent,noStyle
-  ,VALUE("On",true,doNothing,noEvent)
-  ,VALUE("Off",false,doNothing,noEvent)
+  ,VALUE("On",false,doNothing,noEvent)
+  ,VALUE("Off",true,doNothing,noEvent)
 );
 MENU(togsensMenu,"En/Dis(able) Sensors",doNothing,anyEvent,wrapStyle
 	,SUBMENU(sensor0Toggle)
@@ -264,19 +238,24 @@ void setup()   {
   digitalWrite(OLEDCS_1, HIGH);
   pinMode (MAX_CS, OUTPUT);
   digitalWrite(MAX_CS, HIGH);
-  pinMode (SD_CS, OUTPUT);
-  digitalWrite(SD_CS, HIGH);
+  //pinMode (SD_CS, OUTPUT);
+  //digitalWrite(SD_CS, HIGH);
   
   MAXInitializeChannel(MAX_CS); // Init the MAX31856 
 
-  display1.begin(SSD1306_SWITCHCAPVCC, SSD1306_I2C_ADDRESS, true); //construct our displays
+  display1.begin(SSD1306_SWITCHCAPVCC, 0, true); //construct our displays
 
   display1.clearDisplay();   // clears the screen and buffer
 
   display1.display(); //output to the screen to avoid adafruit logo
 
   // Ensure #define ENABLE_SPI_TRANSACTIONS 1 is set in SdFatConfig.h
+  #ifdef ARDUINO_BLACK_F407VE
+  if (!SD.begin(SD_DETECT_PIN))        
+  #endif
+  #ifdef BOARD_maple_mini
   if (!sd.begin(SD_CS, SD_SCK_MHZ(8)))
+  #endif
   {
     display1.setTextColor(WHITE);
 	  display1.setTextSize(1);
@@ -354,12 +333,23 @@ void toggleDatalog(void) {
 			for (int i=0; i<100; i++) {
 				file_name[5] = i/10 + '0';
 				file_name[6] = i%10 + '0';
-				if (sdLogFile.open(file_name, O_CREAT | O_EXCL | O_WRITE)) {
+        
+        #ifdef ARDUINO_BLACK_F407VE
+        if (SD.open(file_name)) {
+        #endif
+        #ifdef BOARD_maple_mini
+        if (sdLogFile.open(file_name, O_CREAT | O_EXCL | O_WRITE)) {
+        #endif
 					break;
 				}
 			}
 
-			if (sdLogFile.isOpen()) {
+      #ifdef ARDUINO_BLACK_F407VE
+      if (sdLogFile = SD.open(file_name, FILE_WRITE)) {
+      #endif
+      #ifdef BOARD_maple_mini
+      if (sdLogFile.isOpen()) {
+      #endif
 				sdLogFile.println("LRDuino data Log file");sdLogFile.println();
 				sdLogFile.print(Sensors[0].sensename);sdLogFile.print(";");			
 				sdLogFile.print(Sensors[1].sensename);sdLogFile.print(";");
@@ -377,14 +367,19 @@ void toggleDatalog(void) {
 //				sdLogFile.print(Sensors[13].sensename);sdLogFile.println(";");
 			} else { //file open failed
 				dataLog = false;
-				Serial.println("failed to open file");
+				//Serial.println("failed to open file");
 			}
 		}
 	
 	// open the file and write the header
 	} else if (sd_present && !dataLog) {
 	// close the file
-		if (sdLogFile.isOpen())	{ 
+      #ifdef ARDUINO_BLACK_F407VE
+      if (sdLogFile) {        
+      #endif
+      #ifdef BOARD_maple_mini
+      if (sdLogFile.isOpen()) { 
+      #endif
 			sdLogFile.close();
 		}
 	}
@@ -392,19 +387,27 @@ void toggleDatalog(void) {
 
 void writeDatalogline(void) {
 	// write a line to the datalog
-	if (sdLogFile.isOpen()) { 
-		sdLogFile.print(Sensors[0].sensevals);sdLogFile.print(";");			
-		sdLogFile.print(Sensors[1].sensevals);sdLogFile.print(";");
-		sdLogFile.print(Sensors[2].sensevals);sdLogFile.print(";");
-		sdLogFile.print(Sensors[3].sensevals);sdLogFile.print(";");
-		sdLogFile.print(Sensors[4].sensevals);sdLogFile.print(";");
-		sdLogFile.print(Sensors[5].sensevals);sdLogFile.print(";");
-		sdLogFile.print(Sensors[6].sensevals);sdLogFile.print(";");
-		sdLogFile.print(Sensors[7].sensevals);sdLogFile.print(";");
-		sdLogFile.print(Sensors[8].sensevals);sdLogFile.print(";");
-		sdLogFile.print(Sensors[9].sensevals);sdLogFile.print(";");
-		sdLogFile.print(Sensors[10].sensevals);sdLogFile.print(";");
-		sdLogFile.print(Sensors[11].sensevals);sdLogFile.println(";");
+  #ifdef ARDUINO_BLACK_F407VE
+  if (sdLogFile) {        
+  #endif
+  #ifdef BOARD_maple_mini
+  if (sdLogFile.isOpen()) { 
+  #endif
+
+  // TODO - fix conversion of int to char for STM32SD.h
+  
+//		sdLogFile.print(Sensors[0].sensevals);sdLogFile.print(";");			
+//		sdLogFile.print(Sensors[1].sensevals);sdLogFile.print(";");
+//		sdLogFile.print(Sensors[2].sensevals);sdLogFile.print(";");
+//		sdLogFile.print(Sensors[3].sensevals);sdLogFile.print(";");
+//		sdLogFile.print(Sensors[4].sensevals);sdLogFile.print(";");
+//		sdLogFile.print(Sensors[5].sensevals);sdLogFile.print(";");
+//		sdLogFile.print(Sensors[6].sensevals);sdLogFile.print(";");
+//		sdLogFile.print(Sensors[7].sensevals);sdLogFile.print(";");
+//		sdLogFile.print(Sensors[8].sensevals);sdLogFile.print(";");
+//		sdLogFile.print(Sensors[9].sensevals);sdLogFile.print(";");
+//		sdLogFile.print(Sensors[10].sensevals);sdLogFile.print(";");
+//		sdLogFile.print(Sensors[11].sensevals);sdLogFile.println(";");
 //		sdLogFile.print(Sensors[12].sensevals);sdLogFile.print(";");
 //		sdLogFile.print(Sensors[13].sensevals);sdLogFile.println(";");
 	} 
@@ -661,7 +664,7 @@ void drawDISPLAY(Adafruit_SSD1306 &refDisp, uint8_t index) { // DISPLAY 1 is our
   } else if (Sensors[sensor0].slaveID != 99) { // draw paired sensors
     drawSensor(0, 0, refDisp, sensor0, true);
     drawSensor(33, 0, refDisp, Sensors[sensor0].slaveID, true);
-  } else if ((sensor0 == 20)) { // draw a bargraph
+  } else if ((sensor0 == 2)) { // draw a bargraph
     drawSensor(0, 0, refDisp, sensor0, true); 
     drawBarGraph(refDisp, sensor0);
   } else {
@@ -967,6 +970,7 @@ int readBoost(uint8_t sensor, uint8_t index) {
   int rawval;
   float kpaval;
   float boost;
+  //
   //mV per mB = 2640mv/6894.76mb  = 0.3828  (this is for 3.3v STM32)
   //mv per ADC = 3300mv/4095 = 0.80586
   //mb per ADC = 2.1052
@@ -995,7 +999,7 @@ int readPress(uint8_t sensor, uint8_t index) {
   //offset = 330/0.80586 = 409 ADC's
   rawval = analogRead(sensor);       // Read MAP sensor raw value on analog port 0
   kpaval = ((rawval-409) * 2.0877)/10;             // convert to kpa
-  oilpress = (kpaval * 0.145038); Convert to psi - sensor is already relative to atmospheric
+  oilpress = (kpaval * 0.145038); //Convert to psi - sensor is already relative to atmospheric
   // process any faults
   return (processConstraints(DIVISOR / 100, rawval, int(oilpress), index));
 }
@@ -1075,6 +1079,3 @@ double MAXReadTemperature(int Pin) {
   // Return the temperature
   return (temperature);
 }
-
-
-
