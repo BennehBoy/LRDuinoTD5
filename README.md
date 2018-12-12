@@ -14,17 +14,17 @@ I started this project so that I could monitor some parts on my tuned Land Rover
 * Generic linear output pressure sensors - eg for oil
 * TD5 Ecu PID's via K-Line/Serial Emulator
 
-# License
+## License
 
 The source code of this project are released under "THE BEER-WARE" license.
 
 I would, however, consider it a great courtesy if you could email me and tell me about your project and how this code was used, just for my own continued personal gratification :)
 
-# Contribution
+## Contribution
 
 Contributions in all forms (including documentation) are welcomed. If you would like to contribute to this project, then just fork it in github and send a pull request.
 
-# References
+## References
 
 * STM32Duino - http://www.stm32duino.com
 * Adafruint Graphics Library - https://github.com/adafruit/Adafruit-GFX-Library
