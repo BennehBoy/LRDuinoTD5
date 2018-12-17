@@ -19,19 +19,24 @@ Td5Comm.cpp -
 
 #include <Arduino.h>
 
-#include "td5comm.h"
 
 #ifdef ARDUINO_BLACK_F407VE
   #include "LRDuinoDefs407VE.h"
-  #define obdSerial Serial1
+  #define obdSerial Serial3
 #endif
-#ifdef BOARD_maple_mini
+#if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c
   #include "LRDuinoDefsMM.h"
   #define obdSerial Serial3
 #endif
+#if defined ARDUINO_ARCH_ESP32
+  #include "LRDuinoDefsESP.h"
+  HardwareSerial obdSerial(1);
+#endif
+//Uncomment to see ECU response via Serial.
+//#define _DEBUG_
 
 #include "td5strings.h"
-//#include "td5hmi.h"
+#include "td5comm.h"
 #include "keygen.h"
 
 static float ambientPressure = 100.0;
@@ -377,6 +382,7 @@ void Td5Comm::initComm()
     {
       // switch now to 10400 bauds
       obdSerial.begin(10400);
+      Serial.begin(57600);
 
       // bit banging done, now verify connection at 10400 baud
       if (getPid(&pidInitFrame) <= 0)

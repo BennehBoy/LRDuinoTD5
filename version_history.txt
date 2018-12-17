@@ -1,3 +1,10 @@
+Version 0.09
+Bluepill support added
+ESP32 initial support added - Only tested on NodeMCU-32S, ADC not yet tested
+Compilation will now fail on unsupported hardware
+Remapped VET6 K-line to Serial3
+Cleaned up pin definitions
+
 Version 0.08
 Sensor presets broken out into separate header file
 Compatible with latest Adafruit SSD1306 library (1.2.9 at time of writing)

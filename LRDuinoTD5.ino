@@ -10,13 +10,31 @@
     #define SD_DETECT_PIN SD_DETECT_NONE
   #endif
   File sdLogFile;
+  #define ARCH_DEFINED
 #endif
 
-#ifdef BOARD_maple_mini
+#if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c
   #include "LRDuinoDefsMM.h"
   #include <SdFat.h>
   SdFat sd;
   SdFile sdLogFile;
+  #define ARCH_DEFINED
+#endif
+
+#if defined ARDUINO_ARCH_ESP32
+  #include "LRDuinoDefsESP.h"
+  #include <SdFat.h>
+  SdFat sd;
+  SdFile sdLogFile;
+  static const int spiClk = 1000000; // 1 MHz
+  SPIClass * vspi = NULL;
+  #define ARCH_DEFINED
+#endif
+
+
+
+#ifndef ARCH_DEFINED
+#error Unsupported Architecture
 #endif
 
 #include <Adafruit_SSD1306.h>
@@ -231,15 +249,22 @@ NAVROOT(nav,mainMenu,MAX_DEPTH,in,out);
 
 void setup()   {
   //start serial connection
-  //Serial.begin(9600);  //uncomment to send serial debug info
+  Serial.begin(57600);  //uncomment to send serial debug info
+
+#if defined ARDUINO_ARCH_ESP32
+  vspi = new SPIClass(VSPI);
+  vspi->begin();
+#endif
 
   // Pin setup
   pinMode (OLEDCS_1, OUTPUT);
   digitalWrite(OLEDCS_1, HIGH);
   pinMode (MAX_CS, OUTPUT);
   digitalWrite(MAX_CS, HIGH);
-  //pinMode (SD_CS, OUTPUT);
-  //digitalWrite(SD_CS, HIGH);
+
+#ifdef ARDUINO_BLACK_F407VE
+  pinMode (PA0, INPUT_PULLDOWN);
+#endif
   
   MAXInitializeChannel(MAX_CS); // Init the MAX31856 
 
@@ -253,7 +278,7 @@ void setup()   {
   #ifdef ARDUINO_BLACK_F407VE
   if (!SD.begin(SD_DETECT_PIN))        
   #endif
-  #ifdef BOARD_maple_mini
+  #if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_ARCH_ESP32
   if (!sd.begin(SD_CS, SD_SCK_MHZ(8)))
   #endif
   {
@@ -337,7 +362,7 @@ void toggleDatalog(void) {
         #ifdef ARDUINO_BLACK_F407VE
         if (SD.open(file_name)) {
         #endif
-        #ifdef BOARD_maple_mini
+        #if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_ARCH_ESP32
         if (sdLogFile.open(file_name, O_CREAT | O_EXCL | O_WRITE)) {
         #endif
 					break;
@@ -347,7 +372,7 @@ void toggleDatalog(void) {
       #ifdef ARDUINO_BLACK_F407VE
       if (sdLogFile = SD.open(file_name, FILE_WRITE)) {
       #endif
-      #ifdef BOARD_maple_mini
+      #if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_ARCH_ESP32
       if (sdLogFile.isOpen()) {
       #endif
 				sdLogFile.println("LRDuino data Log file");sdLogFile.println();
@@ -377,7 +402,7 @@ void toggleDatalog(void) {
       #ifdef ARDUINO_BLACK_F407VE
       if (sdLogFile) {        
       #endif
-      #ifdef BOARD_maple_mini
+      #if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_ARCH_ESP32
       if (sdLogFile.isOpen()) { 
       #endif
 			sdLogFile.close();
@@ -390,7 +415,7 @@ void writeDatalogline(void) {
   #ifdef ARDUINO_BLACK_F407VE
   if (sdLogFile) {        
   #endif
-  #ifdef BOARD_maple_mini
+  #if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_ARCH_ESP32
   if (sdLogFile.isOpen()) { 
   #endif
 
