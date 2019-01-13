@@ -20,16 +20,17 @@
 #define OLED_CLK    PB3		// SPI1_SCK - connect to D0 on SSD1306
 // SPI Device pins
 #define MAX_CS      PE11
-#define OLEDCS_1	PE10
+#define OLEDCS_1	  PE10
 #define OLED_RESET  PE12
 #define OLED_DC     PE8
+#define SD_CS       PE13
 
 // Analogue inputs
-#define A4          PA4		// Coolant Level
-#define A3          PA3		// Oil Temp
-#define A2          PA2		// Oil pressure
-#define A1          PA1		// tbox temp
-#define A0          PA5		// boost
+#define COOL          A4		// Coolant Level - PA4
+#define OILT          A3		// Oil Temp - PA3
+#define OILP          A2		// Oil pressure - PA2
+#define TBXT          A1		// tbox temp  - PA1
+#define BOST          A5		// boost - PA5
 
 // user input
 #define UPBUT		PE8		// **TBD**
@@ -39,11 +40,14 @@
 #define SELBUT    	PE4		// built in K2
 
 //K-Line - Serial3
-#define K_OUT       PA9		//TX3
-#define K_IN        PA10	//RX3
+#define K_OUT       PB10  //TX3
+#define K_IN        PB11  //RX3
 
 // MAX31856 registers
 #define NumRegisters 10
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
+
+// For CDC serial
+#define Serial SerialUSB
 
 #endif

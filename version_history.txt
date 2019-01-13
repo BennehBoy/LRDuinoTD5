@@ -1,3 +1,12 @@
+Version 0.10
+Corrected a MAX31856 setup issue (register 0x04 written to twice)
+ESP32 ADC resolution set to 12 bits
+BLACK407ZE & ZG support added
+DIYMROE Support added
+Fix ADC resolution for STM core based F4 devices
+CDC Serial for STM core based devices
+Fixed issue where analog pins were being redefined as Ax, this does not work on STM's core (gives an incorrect pin mapping)
+
 Version 0.09
 Bluepill support added
 ESP32 initial support added - Only tested on NodeMCU-32S, ADC not yet tested

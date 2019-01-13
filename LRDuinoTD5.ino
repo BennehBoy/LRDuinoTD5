@@ -3,7 +3,7 @@
 
 #include <SPI.h>
 
-#ifdef ARDUINO_BLACK_F407VE
+#if defined ARDUINO_BLACK_F407VE || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG
 #include "LRDuinoDefs407VE.h"
   #include <STM32SD.h>
   #ifndef SD_DETECT_PIN
@@ -13,7 +13,15 @@
   #define ARCH_DEFINED
 #endif
 
-#if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c
+#if defined ARDUINO_DIYMROE_F407VGT
+  #include "LRDuinoDefs407VE.h"
+  #include <SdFat.h>
+  SdFat sd;
+  SdFile sdLogFile;
+  #define ARCH_DEFINED
+#endif
+
+#if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_MAPLEMINI_F103CB || defined ARDUINO_BLUEPILL_F103C8
   #include "LRDuinoDefsMM.h"
   #include <SdFat.h>
   SdFat sd;
@@ -53,7 +61,7 @@ using namespace Menu;
 
 byte RegisterValues[] =    {0x90,  0x03,   0xFC,   0x7F,   0xC0,   0x7F,     0xFF,     0x80,     0x00,     0x00 };
 String RegisterNames[] =   {"CR0", "CR1", "MASK", "CJHF", "CHLF", "LTHFTH", "LTHFTL", "LTLFTH", "LTLFTL", "CJTO"};
-byte RegisterAddresses[] = {0x00,  0x01,   0x02,   0x03,   0x04,   0x04,     0x06,     0x07,     0x08,     0x09 };
+byte RegisterAddresses[] = {0x00,  0x01,   0x02,   0x03,   0x04,   0x05,     0x06,     0x07,     0x08,     0x09 };
 
 Td5Comm td5;
 
@@ -249,11 +257,13 @@ NAVROOT(nav,mainMenu,MAX_DEPTH,in,out);
 
 void setup()   {
   //start serial connection
-  Serial.begin(57600);  //uncomment to send serial debug info
+  //Serial.begin(57600);  //uncomment to send serial debug info
 
 #if defined ARDUINO_ARCH_ESP32
   vspi = new SPIClass(VSPI);
   vspi->begin();
+  analogReadResolution(12); //12 bits
+  analogSetAttenuation(ADC_11db);  //For all pins  = 0-3.3v
 #endif
 
   // Pin setup
@@ -262,8 +272,9 @@ void setup()   {
   pinMode (MAX_CS, OUTPUT);
   digitalWrite(MAX_CS, HIGH);
 
-#ifdef ARDUINO_BLACK_F407VE
-  pinMode (PA0, INPUT_PULLDOWN);
+#if defined ARDUINO_BLACK_F407VE || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG
+  pinMode (PA0, INPUT_PULLDOWN); //Button K_UP
+  analogReadResolution(12);
 #endif
   
   MAXInitializeChannel(MAX_CS); // Init the MAX31856 
@@ -275,10 +286,9 @@ void setup()   {
   display1.display(); //output to the screen to avoid adafruit logo
 
   // Ensure #define ENABLE_SPI_TRANSACTIONS 1 is set in SdFatConfig.h
-  #ifdef ARDUINO_BLACK_F407VE
+  #if defined ARDUINO_BLACK_F407VE || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG
   if (!SD.begin(SD_DETECT_PIN))        
-  #endif
-  #if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_ARCH_ESP32
+  #else
   if (!sd.begin(SD_CS, SD_SCK_MHZ(8)))
   #endif
   {
@@ -287,7 +297,6 @@ void setup()   {
     display1.setCursor(0, 0); 
     display1.println("SD init failed...   ");
 	  display1.display();
-	  delay(1000);
     sd_present = false;
   }
   else
@@ -299,11 +308,7 @@ void setup()   {
   //atmos = readBoost(0,0);  // not actually used at this point so could be rmeoved
 
   initOBD(); // this also fires getSensecount()
-  
-  // set up our analogue inputs on STM32
-  for (int x = 7; x < 11; x++) {
-    //pinMode(x, INPUT_ANALOG);
-  }
+
 }
 
 void initOBD(void) {
@@ -359,20 +364,18 @@ void toggleDatalog(void) {
 				file_name[5] = i/10 + '0';
 				file_name[6] = i%10 + '0';
         
-        #ifdef ARDUINO_BLACK_F407VE
+        #if defined ARDUINO_BLACK_F407VE || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG
         if (SD.open(file_name)) {
-        #endif
-        #if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_ARCH_ESP32
+        #else
         if (sdLogFile.open(file_name, O_CREAT | O_EXCL | O_WRITE)) {
         #endif
 					break;
 				}
 			}
 
-      #ifdef ARDUINO_BLACK_F407VE
+      #if defined ARDUINO_BLACK_F407VE || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG
       if (sdLogFile = SD.open(file_name, FILE_WRITE)) {
-      #endif
-      #if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_ARCH_ESP32
+      #else
       if (sdLogFile.isOpen()) {
       #endif
 				sdLogFile.println("LRDuino data Log file");sdLogFile.println();
@@ -399,10 +402,9 @@ void toggleDatalog(void) {
 	// open the file and write the header
 	} else if (sd_present && !dataLog) {
 	// close the file
-      #ifdef ARDUINO_BLACK_F407VE
+      #if defined ARDUINO_BLACK_F407VE || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG
       if (sdLogFile) {        
-      #endif
-      #if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_ARCH_ESP32
+      #else
       if (sdLogFile.isOpen()) { 
       #endif
 			sdLogFile.close();
@@ -412,30 +414,28 @@ void toggleDatalog(void) {
 
 void writeDatalogline(void) {
 	// write a line to the datalog
-  #ifdef ARDUINO_BLACK_F407VE
-  if (sdLogFile) {        
-  #endif
-  #if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_ARCH_ESP32
+  #if defined ARDUINO_BLACK_F407VE || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG
+  if (sdLogFile) {
+      // TODO - fix conversion of int to char for STM32SD.h   
+  }
+  #else
   if (sdLogFile.isOpen()) { 
+		sdLogFile.print(Sensors[0].sensevals);sdLogFile.print(";");			
+		sdLogFile.print(Sensors[1].sensevals);sdLogFile.print(";");
+		sdLogFile.print(Sensors[2].sensevals);sdLogFile.print(";");
+		sdLogFile.print(Sensors[3].sensevals);sdLogFile.print(";");
+		sdLogFile.print(Sensors[4].sensevals);sdLogFile.print(";");
+		sdLogFile.print(Sensors[5].sensevals);sdLogFile.print(";");
+		sdLogFile.print(Sensors[6].sensevals);sdLogFile.print(";");
+		sdLogFile.print(Sensors[7].sensevals);sdLogFile.print(";");
+		sdLogFile.print(Sensors[8].sensevals);sdLogFile.print(";");
+		sdLogFile.print(Sensors[9].sensevals);sdLogFile.print(";");
+		sdLogFile.print(Sensors[10].sensevals);sdLogFile.print(";");
+		sdLogFile.print(Sensors[11].sensevals);sdLogFile.println(";");
+		sdLogFile.print(Sensors[12].sensevals);sdLogFile.print(";");
+		sdLogFile.print(Sensors[13].sensevals);sdLogFile.println(";");
+	}
   #endif
-
-  // TODO - fix conversion of int to char for STM32SD.h
-  
-//		sdLogFile.print(Sensors[0].sensevals);sdLogFile.print(";");			
-//		sdLogFile.print(Sensors[1].sensevals);sdLogFile.print(";");
-//		sdLogFile.print(Sensors[2].sensevals);sdLogFile.print(";");
-//		sdLogFile.print(Sensors[3].sensevals);sdLogFile.print(";");
-//		sdLogFile.print(Sensors[4].sensevals);sdLogFile.print(";");
-//		sdLogFile.print(Sensors[5].sensevals);sdLogFile.print(";");
-//		sdLogFile.print(Sensors[6].sensevals);sdLogFile.print(";");
-//		sdLogFile.print(Sensors[7].sensevals);sdLogFile.print(";");
-//		sdLogFile.print(Sensors[8].sensevals);sdLogFile.print(";");
-//		sdLogFile.print(Sensors[9].sensevals);sdLogFile.print(";");
-//		sdLogFile.print(Sensors[10].sensevals);sdLogFile.print(";");
-//		sdLogFile.print(Sensors[11].sensevals);sdLogFile.println(";");
-//		sdLogFile.print(Sensors[12].sensevals);sdLogFile.print(";");
-//		sdLogFile.print(Sensors[13].sensevals);sdLogFile.println(";");
-	} 
 }
 
 void loop() {
@@ -533,13 +533,13 @@ void loop() {
     // SENSOR READING
 
     if (Sensors[0].senseactive) {
-      Sensors[0].sensevals = readBoost(A0, 0); // read boost off A0 and store at index 0
+      Sensors[0].sensevals = readBoost(BOST, 0); // read boost off A0 and store at index 0
       processPeak(0); // TURBO
       audibleWARN(0);
     }
 
     if (Sensors[1].senseactive) {
-      Sensors[1].sensevals = readERR2081(A1, 1); // read A1, currently the Gearbox oil temp sensor
+      Sensors[1].sensevals = readERR2081(TBXT, 1); // read A1, currently the Gearbox oil temp sensor
       processPeak(1); // TBOX OIL TEMP
       audibleWARN(1);
     }
@@ -551,19 +551,19 @@ void loop() {
     }
 
     if (Sensors[3].senseactive) {
-      Sensors[3].sensevals = readPress(A2, 3); // placeholder at the moment but should be very similar to the boost reading if a cheap pressure sensor is used (ie one which returns a linear voltage 0-5v based on presure)
+      Sensors[3].sensevals = readPress(OILP, 3); // placeholder at the moment but should be very similar to the boost reading if a cheap pressure sensor is used (ie one which returns a linear voltage 0-5v based on presure)
       processPeak(3); // OIL PRESSURE
       audibleWARN(3);
     }
 
     if (Sensors[4].senseactive) {
-      Sensors[4].sensevals = readERR2081(A3, 4); // read A7, store at index 4 currently the Engine oil temp sensor
+      Sensors[4].sensevals = readERR2081(OILT, 4); // read A7, store at index 4 currently the Engine oil temp sensor
       processPeak(4); // OIL TEMP
       audibleWARN(4);
     }
 
     if (Sensors[5].senseactive) {
-      Sensors[5].sensevals = readCoolantLevel(A4, 5); // read A6, to check if coolant level is low
+      Sensors[5].sensevals = readCoolantLevel(COOL, 5); // read A6, to check if coolant level is low
       audibleWARN(5);
       //processPeak(5); // Coolant Level - no need to set a max as this is boolean
     }
@@ -1026,6 +1026,7 @@ int readPress(uint8_t sensor, uint8_t index) {
   kpaval = ((rawval-409) * 2.0877)/10;             // convert to kpa
   oilpress = (kpaval * 0.145038); //Convert to psi - sensor is already relative to atmospheric
   // process any faults
+  Serial.println(rawval);
   return (processConstraints(DIVISOR / 100, rawval, int(oilpress), index));
 }
 

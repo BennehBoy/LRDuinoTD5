@@ -26,11 +26,11 @@
 #define OLED_DC     PB15
 
 // Analogue inputs
-#define A4          PA4		// Coolant Level
-#define A3          PA3		// Oil Temp
-#define A2          PA2		// Oil pressure
-#define A1          PA1		// tbox temp
-#define A0          PA0		// boost
+#define COOL          PA4    // Coolant Level
+#define OILT          PA3   // Oil Temp
+#define OILP          PA2   // Oil pressure
+#define TBXT          PA1   // tbox temp
+#define BOST          PA5   // boost
 
 // user input
 #define UPBUT		PC15	//12

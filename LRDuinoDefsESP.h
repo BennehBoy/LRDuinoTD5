@@ -26,11 +26,11 @@
 #define OLED_DC     16
 
 // Analogue inputs
-#define A4          32		// Coolant Level
-#define A3          35		// Oil Temp
-#define A2          34		// Oil pressure
-#define A1          39		// tbox temp
-#define A0          36		// boost
+#define COOL          32		// Coolant Level
+#define OILT          35		// Oil Temp
+#define OILP          34		// Oil pressure
+#define TBXT          39		// tbox temp
+#define BOST          36		// boost
 
 // user input
 #define UPBUT		33	//12

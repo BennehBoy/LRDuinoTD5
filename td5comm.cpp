@@ -20,11 +20,11 @@ Td5Comm.cpp -
 #include <Arduino.h>
 
 
-#ifdef ARDUINO_BLACK_F407VE
+#if defined ARDUINO_BLACK_F407VE || defined ARDUINO_DIYMROE_F407VGT || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG
   #include "LRDuinoDefs407VE.h"
   #define obdSerial Serial3
 #endif
-#if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c
+#if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_MAPLEMINI_F103CB || defined ARDUINO_BLUEPILL_F103C8
   #include "LRDuinoDefsMM.h"
   #define obdSerial Serial3
 #endif
@@ -35,7 +35,7 @@ Td5Comm.cpp -
 //Uncomment to see ECU response via Serial.
 //#define _DEBUG_
 
-#include "td5strings.h"
+//#include "td5strings.h"
 #include "td5comm.h"
 #include "keygen.h"
 
