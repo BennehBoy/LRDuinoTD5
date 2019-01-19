@@ -1,3 +1,15 @@
+Version 0.11
+Code restructured
+Cleaned up some warnings
+Now Eclipse/Sloeber compatible
+Removed some data that deprecated sensors required
+Removed some unused variables
+Simplified SDIO defs
+Removed an equivalence bug
+Tested with BlackPill - using https://github.com/rogerclarkmelbourne/Arduino_STM32
+Graphics output overhauled so it is proportional to screen width & only updates what has changed - some display glitches to work out yet
+SSD1331 & SSD1351 support added
+
 Version 0.10
 Corrected a MAX31856 setup issue (register 0x04 written to twice)
 ESP32 ADC resolution set to 12 bits

@@ -19,14 +19,6 @@ Td5strings.h -
 #ifndef Td5Strings_h
 #define Td5Strings_h
 
-//#if defined ARDUINO_BLACK_F407VE || defined ARDUINO_DIYMROE_F407VGT || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG
-//  #include "LRDuinoDefs407VE.h"
-//#endif
-
-//#if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_MAPLEMINI_F103CB || defined ARDUINO_BLUEPILL_F103C8
-// #include "LRDuinoDefsMM.h"
-//#endif
-
 #ifdef _FAULT_CODES_STRINGS_
 extern const char *fault_code[];
 #endif

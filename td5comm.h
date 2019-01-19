@@ -67,8 +67,8 @@ public:
   void init();
   void initComm();
   int8_t getPid(Td5Pid* pid);
-  boolean ecuIsConnected();
-  boolean newDataIsAvailable();
+  bool ecuIsConnected();
+  bool newDataIsAvailable();
   unsigned long getLastReceivedPidTime();
   unsigned long getLastReceivedPidElapsedTime();
   void setInitStep(byte init_step);
@@ -76,7 +76,7 @@ public:
   int getLostFrames();
   int getConsecutiveLostFrames();
 
-  boolean connectToEcu(boolean showBar = true);
+  bool connectToEcu(bool showBar = true);
   void disconnectFromEcu();
   int getFaultCodes();
   int getFaultCode(int index);
@@ -85,15 +85,15 @@ public:
   
 private:  
   byte checksum(byte *data, byte len);
-  boolean read_byte(byte * b);
+  bool read_byte(byte * b);
   void write_byte(byte b);
 
 protected:
   unsigned long lastReceivedPidTime;
   unsigned long initTime;
   byte initStep;  // Init is multistage, this is the counter
-  boolean ecuConnection;  // Have we connected to the ECU or not
-  boolean newDataAvailable;
+  bool ecuConnection;  // Have we connected to the ECU or not
+  bool newDataAvailable;
   int lostFrames;
   int8_t consLostFrames;
   int faultCodesCount;
@@ -105,9 +105,9 @@ class Td5Pid
 public:
   Td5Pid(byte ID, byte reqlen, byte resplen, long cycletime = 0);
   void setCycleTime(long time){ cycleTime = time; };
-  boolean getValue(float *fvalue, byte index = 0);
-  boolean getValue(uint16_t *value, byte index = 0);
-  boolean getValue(int *value, byte index = 0);
+  bool getValue(float *fvalue, byte index = 0);
+  bool getValue(uint16_t *value, byte index = 0);
+  bool getValue(int *value, byte index = 0);
   float getfValue(byte index = 0);
   uint16_t getulValue(byte index = 0);
   int16_t getlValue(byte index = 0);
@@ -162,4 +162,3 @@ extern Td5Pid pidTWG;
 #define PID_NEGATIVE_ANSWER -2
 
 #endif
-

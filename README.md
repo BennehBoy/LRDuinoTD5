@@ -1,11 +1,12 @@
 ## LRDuinoTD5 - ISO14230-1
-In car multi gauge system -  STM32, ESP32, SSD1306, MAX31856, L9637D, TD5 ECU
+In car multi gauge system -  STM32, ESP32, SSD1306, SSD1331, SSD1351, MAX31856, L9637D, TD5 ECU
 
 I started this project so that I could monitor some parts on my tuned Land Rover Discovery TD5 that are not covered by the stock ECU.  This does not mean that LRDuino is limited to use in any way on Land Rovers alone, even if they are the best 4x4 by far.
 
-### Latest version (0.9) can be used with
+### Latest version (0.11) can be used with
 * Maple Mini (or chinese copy) using core: https://github.com/rogerclarkmelbourne/Arduino_STM32
 * Blue Pill using core: https://github.com/rogerclarkmelbourne/Arduino_STM32
+* Black Pill  using core: https://github.com/rogerclarkmelbourne/Arduino_STM32
 * Black 407VET6 using core: https://github.com/stm32duino/Arduino_Core_STM32
 * NodeMCU-32S ESP32 using Espressif Core: https://github.com/espressif/arduino-esp32
 
@@ -15,6 +16,12 @@ I started this project so that I could monitor some parts on my tuned Land Rover
 * Generic linear output MAP sensors - for vehicle boost
 * Generic linear output pressure sensors - eg for oil
 * TD5 Ecu PID's via K-Line/Serial Emulator - https://github.com/BennehBoy/TD5EcuEmulatorMM
+
+### Display types supported:
+* SSD1306 - Monochrome 128*96 OLED
+* SSD1331 - Full colour 96*64 OLED
+* SSD1351 - Full colour 128*128 OLED
+Adding additional diaplsy (which have Adafruit libraries) should be as simple as adding a section to Macros.h and an ifdef section in LRDuinoTD5.ino
 
 ## License
 

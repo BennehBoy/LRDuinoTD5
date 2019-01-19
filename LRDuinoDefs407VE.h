@@ -48,6 +48,6 @@
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
 
 // For CDC serial
-#define Serial SerialUSB
+//#define Serial SerialUSB
 
 #endif

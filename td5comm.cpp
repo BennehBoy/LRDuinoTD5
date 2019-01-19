@@ -39,8 +39,6 @@ Td5Comm.cpp -
 #include "td5comm.h"
 #include "keygen.h"
 
-static float ambientPressure = 100.0;
-
 const unsigned char pid_0x00[] = { 0x81, 0x13, 0xF7, 0x81, 0x0C };        // INIT_FRAME
 const unsigned char pid_0x01[] = { 0x02, 0x10, 0xA0, 0x00 };              // START_DIAG
 const unsigned char pid_0x02[] = { 0x02, 0x27, 0x01, 0x00 };              // REQ_SEED
@@ -123,14 +121,10 @@ void debug_log_frame(byte *datasent, byte sentlen, byte *datarecv, byte recvlen)
 
 void retrieve_keys_from_eeprom(uint8_t *seed, uint8_t *key)
 {
-  	keyBytes_t myKey;
-	int keyLow, keyHigh;
-
-    myKey.low_byte = seed[1];  //might need to switch order
-    myKey.high_byte = seed[0];
-
-    keyGenerate(&myKey);
- 
+  keyBytes_t myKey;
+  myKey.low_byte = seed[1];  //might need to switch order
+  myKey.high_byte = seed[0];
+  keyGenerate(&myKey);
   key[1] = myKey.low_byte; 
   key[0] = myKey.high_byte; 
 }
@@ -183,10 +177,10 @@ void Td5Comm::init()
   pinMode(K_IN, INPUT);
 }
 
-boolean Td5Comm::read_byte(byte * b)
+bool Td5Comm::read_byte(byte * b)
 {
   int readData;
-  boolean success = true;
+  bool success = true;
   byte t=0;
 
   //digitalWrite(ledPin, HIGH);
@@ -220,7 +214,7 @@ void Td5Comm::write_byte(byte b)
 
 int8_t Td5Comm::getPid(Td5Pid* pid)
 {
-  boolean gotData = false;
+  bool gotData = false;
   byte responseIndex = 0;
   byte dataCaught = '\0';  
   byte dataLen = 0;
@@ -290,12 +284,12 @@ int8_t Td5Comm::getPid(Td5Pid* pid)
   return PID_LOST_FRAME;      
 }
 
-boolean Td5Comm::ecuIsConnected()
+bool Td5Comm::ecuIsConnected()
 {
   return ecuConnection; 
 }
 
-boolean Td5Comm::newDataIsAvailable()
+bool Td5Comm::newDataIsAvailable()
 {
   if(newDataAvailable)
   {
@@ -453,7 +447,7 @@ void Td5Comm::initComm()
   }
 }
 
-boolean Td5Comm::connectToEcu(boolean showBar)
+bool Td5Comm::connectToEcu(bool showBar)
 {
   initStep = 0;
   do
@@ -549,9 +543,9 @@ Td5Pid::Td5Pid(byte ID, byte reqlen, byte resplen, long cycletime)
   responseFrame = (byte *)malloc(sizeof(byte) * resplen);
 }
 
-boolean Td5Pid::getValue(float *fvalue, byte index)
+bool Td5Pid::getValue(float *fvalue, byte index)
 {
-  boolean dataValid = false;
+  bool dataValid = false;
   uint16_t value;
   
   switch(id)
@@ -649,9 +643,9 @@ float Td5Pid::getfValue(byte index)
 }
 
 
-boolean Td5Pid::getValue(uint16_t *value, byte index)
+bool Td5Pid::getValue(uint16_t *value, byte index)
 {
-  boolean dataValid = false;
+  bool dataValid = false;
   
   switch(id)
   {
@@ -674,9 +668,9 @@ boolean Td5Pid::getValue(uint16_t *value, byte index)
 }
 
 
-boolean Td5Pid::getValue(int *value, byte index)
+bool Td5Pid::getValue(int *value, byte index)
 {
-  boolean dataValid = false;
+  bool dataValid = false;
   
   switch(id)
   {
