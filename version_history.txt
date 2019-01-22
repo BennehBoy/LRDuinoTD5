@@ -1,3 +1,12 @@
+Version 0.12
+Fixed some drawing issues exiting the menu.
+Fixed flicker issue in menu.
+Change GPIO pinout:  MAX is now on SPI2, OLED DC, CS, RES on different pins, buttons on different pins.
+BlackPill support added for STM core.
+MAX31856 enabled for all screen types
+KNOWN ISSUE - SSD1331 does not function on F4 boards, this due to a SPI setup problem in Adafruit_GFX
+SD_CS pin correctly initialised
+
 Version 0.11
 Code restructured
 Cleaned up some warnings
