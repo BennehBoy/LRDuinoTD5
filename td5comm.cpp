@@ -24,7 +24,7 @@ Td5Comm.cpp -
   #include "LRDuinoDefs407VE.h"
   #define obdSerial Serial3
 #endif
-#if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_MAPLEMINI_F103CB || defined ARDUINO_BLUEPILL_F103C8
+#if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_MAPLEMINI_F103CB || defined ARDUINO_BLUEPILL_F103C8|| defined ARDUINO_BLACKPILL_F103C8
   #include "LRDuinoDefsMM.h"
   #define obdSerial Serial3
 #endif

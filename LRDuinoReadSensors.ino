@@ -82,43 +82,43 @@ uint8_t MAXreadFault(int Pin) {
 }
 
 byte MAXReadSingleRegister(int Pin, byte Register) {
-  SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE3));
+  SPI_2.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE3));
   digitalWrite(Pin, LOW);
   delayMicroseconds(1);
-  SPI.transfer(Register & 0x7F); //set bit 7 to 0 to ensure a read command
+  SPI_2.transfer(Register & 0x7F); //set bit 7 to 0 to ensure a read command
   delayMicroseconds(1);
-  byte data = SPI.transfer(0);
+  byte data = SPI_2.transfer(0);
   digitalWrite(Pin, HIGH);
-  SPI.endTransaction();
+  SPI_2.endTransaction();
   return data;
 }
 
 unsigned long MAXReadMultipleRegisters(int Pin, byte StartRegister, int count) {
   //reads up to 4 sequential registers
-  SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE3));
+  SPI_2.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE3));
   digitalWrite(Pin, LOW);
   unsigned  long data = 0;
-  SPI.transfer(StartRegister & 0x7F); //force bit 7 to 0 to ensure a read command
+  SPI_2.transfer(StartRegister & 0x7F); //force bit 7 to 0 to ensure a read command
   delayMicroseconds(1);
 
   for (int i = 0; i < count; i++) {
-    data = (data << 8) | SPI.transfer(0); //bitshift left 8 bits, then add the next register
+    data = (data << 8) | SPI_2.transfer(0); //bitshift left 8 bits, then add the next register
   }
   digitalWrite(Pin, HIGH);
-  SPI.endTransaction();
+  SPI_2.endTransaction();
   return data;
 }
 
 void MAXWriteRegister(int Pin, byte Register, byte Value) {
   byte Address = Register | 0x80; //Set bit 7 high for a write command
-  SPI.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE3));
+  SPI_2.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE3));
   digitalWrite(Pin, LOW);
   delayMicroseconds(1); // required by the MAX docs
-  SPI.transfer(Address);
+  SPI_2.transfer(Address);
   delayMicroseconds(1);
-  SPI.transfer(Value);
+  SPI_2.transfer(Value);
   digitalWrite(Pin, HIGH);
-  SPI.endTransaction();
+  SPI_2.endTransaction();
 }
 
 double MAXReadTemperature(int Pin) {

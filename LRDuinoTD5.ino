@@ -2,6 +2,7 @@
 // Version 0.011  (STM32 Only)
 
 #include <SPI.h>
+SPIClass SPI_2(2); //Create an SPI2 object for MAX31856
 
 #if defined ARDUINO_BLACK_F407VE || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG // STM Core & SDIO
 #include "LRDuinoDefs407VE.h"
@@ -14,7 +15,7 @@
   #define ARCH_DEFINED
 #endif
 
-#if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_MAPLEMINI_F103CB || defined ARDUINO_BLUEPILL_F103C8
+#if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_MAPLEMINI_F103CB || defined ARDUINO_BLUEPILL_F103C8 || defined ARDUINO_BLACKPILL_F103C8
   #include "LRDuinoDefsMM.h"
   #define ARCH_DEFINED
 #endif
@@ -43,9 +44,9 @@
 #endif
 
 // uncommment the define that matches your diaplsy type
-//#define USE_SSD1306
+#define USE_SSD1306
 //#define USE_SSD1331
-#define USE_SSD1351
+//#define USE_SSD1351
 
 #include <Adafruit_GFX.h>
 
@@ -122,11 +123,14 @@ unsigned long inptimeoutMillis = 0;
 #define fontY 9
 
 bool inMenu = false;   // if true then the menu should be output on display1
+bool exitMenu = false;
 bool dataLog = false;  // if true then we are writing data to SD
 bool sd_present = false; // changes to false if an SD card is inserted at startup
 
 result quitMenu() {
   inMenu = false;
+  exitMenu = true;
+  inptimeoutMillis = inptimeoutMillis - MENUTIMEOUT;
   return proceed;
 }
 
@@ -280,14 +284,16 @@ void setup()   {
   digitalWrite(OLEDCS_1, HIGH);
   pinMode (MAX_CS, OUTPUT);
   digitalWrite(MAX_CS, HIGH);
+  pinMode (SD_CS, OUTPUT);
+  digitalWrite(SD_CS, HIGH);
 
   #if defined ARDUINO_BLACK_F407VE || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG
     pinMode (PA0, INPUT_PULLDOWN); //Button K_UP
     analogReadResolution(12);
   #endif
-  
-//  MAXInitializeChannel(MAX_CS); // Init the MAX31856 
-  display1.begin(); //construct our displays
+
+  MAXInitializeChannel(MAX_CS); // Init the MAX31856 
+  display1.begin(8000000); //construct our displays
   SCREEN_CLEAR();   // clears the screen and buffer
   SCREEN_DISPLAY(); //output to the screen to avoid adafruit logo
 
@@ -320,9 +326,15 @@ void loop() {
   unsigned long currentMillis = millis(); //store the time
 
   // USER INTERACTION
- 	if(currentMillis - inptimeoutMillis > MENUTIMEOUT) {  //timeout the menu 
+ 	if((currentMillis - inptimeoutMillis > MENUTIMEOUT) && (inMenu==true)) {  //timeout the menu 
 		inMenu=false;
+    SCREEN_CLEAR();
 	}
+   if(exitMenu == true) {  //clear the menu if we exited
+    exitMenu=false;
+    SCREEN_CLEAR();
+  }
+ 
  	if ((!inMenu) && (btn_enter.sense() == buttons_held)) {
 		inMenu=true; // turn the menu on if we have a long press on the enter button
 		inptimeoutMillis = currentMillis;
@@ -342,14 +354,15 @@ void loop() {
 			}
 			//nav.active().dirty=true;//for a menu
 			//nav.navFocus->dirty=true;//should invalidate also full screen fields assert(nav.navFocus!=NULL)
-
 			nav.doOutput(); //need to use this as .poll also processes input
+      SCREEN_DISPLAY();
 		}
 	}
   // left rotation requested
   if (btn_left.sense() == buttons_debounce) { 
 	  if (currentMillis - previousMillis > BUT_DELAY) {
 		  rotation = rotation + 1; // rotate the screens if the button was pressed
+      display1.fillScreen(BLACK);
 		  previousMillis = previousMillis - (INTERVAL + 1); // force an update of the screens.
 		  if (sensecount < NUM_DISPLAYS) {
 			  if (rotation == NUM_DISPLAYS) { // if we have less than 8 sensors, keep rotating until we hit the screen count
@@ -404,21 +417,21 @@ void loop() {
 
     if (Sensors[1].senseactive) {
       Sensors[1].senselastvals = Sensors[1].sensevals; // store previous readin (helps with screen drawing)
-      Sensors[1].sensevals = 150; //readERR2081(TBXT, 1); // read A1, currently the Gearbox oil temp sensor
+      Sensors[1].sensevals = readERR2081(TBXT, 1); // read A1, currently the Gearbox oil temp sensor
       processPeak(1); // TBOX OIL TEMP
       audibleWARN(1);
     }
 
     if (Sensors[2].senseactive) {
       Sensors[2].senselastvals = Sensors[2].sensevals; // store previous readin (helps with screen drawing)
-      Sensors[2].sensevals = readERR2081(TBXT, 1); //readMAX(2); //read EGT from the Max31856
+      Sensors[2].sensevals = readMAX(2); //read EGT from the Max31856
       processPeak(2); // EGT
       audibleWARN(2);
     }
 
     if (Sensors[3].senseactive) {
       Sensors[3].senselastvals = Sensors[3].sensevals; // store previous readin (helps with screen drawing)
-      Sensors[3].sensevals = 100 + readPress(OILP, 3); // read oil pressure using Chinese 0-100psi absolute sensor, (output voltage max=5v)
+      Sensors[3].sensevals = readPress(OILP, 3); // read oil pressure using Chinese 0-100psi absolute sensor, (output voltage max=5v)
       processPeak(3); // OIL PRESSURE
       audibleWARN(3);
     }
@@ -511,8 +524,7 @@ void loop() {
 	
     // DRAW DISPLAYS
   	if (!inMenu) {
-      //display1.fillScreen(BLACK);
-  		drawDISPLAY(display1, 1);
+      drawDISPLAY(display1, 1);
   	}
   }
   

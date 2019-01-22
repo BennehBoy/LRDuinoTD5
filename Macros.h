@@ -18,7 +18,7 @@
 
 #ifdef USE_SSD1331
 #define SCREEN_TYPE           Adafruit_SSD1331
-#define SCREEN_CLEAR()     { }
+#define SCREEN_CLEAR()     display1.fillScreen(BLACK);
 #define SCREEN_DISPLAY()    { }
 #define BLACK 0x0000
 #define BLUE 0x001F
@@ -35,7 +35,7 @@
 
 #ifdef USE_SSD1351
 #define SCREEN_TYPE           Adafruit_SSD1351
-#define SCREEN_CLEAR()     { }
+#define SCREEN_CLEAR()     display1.fillScreen(BLACK);
 #define SCREEN_DISPLAY()    { }
 #define BLACK 0x0000
 #define BLUE 0x001F

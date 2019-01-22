@@ -16,28 +16,32 @@
 #define PIEZO       PB0		// PWM for piezo
 // HW SPI
 #define OLED_MOSI   PA7		// SPI1_MOSI - connect to D1 on SSD1306
-#define MAX_MISO    PA6		// SPI1 MISO
+#define SD_MISO     PA6   // SPI1_MISO
+#define OLEDCS_1    PB5
+#define OLED_RESET  PB3   // PA8
+#define OLED_DC     PA15  // PB15
 #define OLED_CLK    PA5		// SPI1_SCK - connect to D0 on SSD1306
-// SPI Device pins
-#define MAX_CS      PC13
-#define SD_CS		PA13
-#define OLEDCS_1	PB5
-#define OLED_RESET  PA8
-#define OLED_DC     PB15
+#define MAX_MOSI    PB15  // SPI2 MOSI
+#define MAX_MISO    PB14  // SPI2 MISO
+#define MAX_CLK     PB13  // SPI2 SCK
+#define MAX_CS      PB12  // SPI2 SS
+#define SD_CS		    PA8
+
+
 
 // Analogue inputs
-#define COOL          PA4    // Coolant Level
-#define OILT          PA3   // Oil Temp
-#define OILP          PA2   // Oil pressure
-#define TBXT          PA1   // tbox temp
-#define BOST          PA5   // boost
+#define COOL        PA4    // Coolant Level
+#define OILT        PA3   // Oil Temp
+#define OILP        PA2   // Oil pressure
+#define TBXT        PA1   // tbox temp
+#define BOST        PA5   // boost
 
 // user input
-#define UPBUT		PC15	//12
-#define DOWNBUT		PC14	//13
-#define LEFTBUT		PB14	//29
-#define RIGHTBUT	PB13	//30
-#define SELBUT      PB12	//31 
+#define UPBUT		    PC14  //Not available on Black Pill
+#define DOWNBUT		  PB6
+#define LEFTBUT		  PC15  //Not available on Black Pill
+#define RIGHTBUT	  PB7
+#define SELBUT      PC13
 
 //K-Line - Serial3
 #define K_OUT       PB10	//TX3
