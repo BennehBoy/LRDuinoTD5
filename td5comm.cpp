@@ -20,19 +20,19 @@ Td5Comm.cpp -
 #include <Arduino.h>
 
 
-#if defined ARDUINO_BLACK_F407VE || defined ARDUINO_DIYMROE_F407VGT || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG
+#if defined ARDUINO_BLACK_F407VE || defined ARDUINO_DIYMROE_F407VGT || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG || defined ARDUINO_FK407M1 // F4 based boards on STM core
   #include "LRDuinoDefs407VE.h"
   #define obdSerial Serial3
 #endif
-#if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_MAPLEMINI_F103CB || defined ARDUINO_BLUEPILL_F103C8|| defined ARDUINO_BLACKPILL_F103C8
+#if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_MAPLEMINI_F103CB || defined ARDUINO_BLUEPILL_F103C8|| defined ARDUINO_BLACKPILL_F103C8 // F1 based boards, either core
   #include "LRDuinoDefsMM.h"
   #define obdSerial Serial3
 #endif
-#if defined ARDUINO_ARCH_ESP32
+#if defined ARDUINO_ARCH_ESP32 // ESP32
   #include "LRDuinoDefsESP.h"
   HardwareSerial obdSerial(1);
 #endif
-//Uncomment to see ECU response via Serial.
+//Uncomment to see ECU response via USB Serial.
 //#define _DEBUG_
 
 //#include "td5strings.h"

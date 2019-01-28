@@ -16,13 +16,15 @@
 #define PIEZO       PE14	// PWM for piezo
 // HW SPI
 #define OLED_MOSI   PB5		// SPI1_MOSI - connect to D1 on SSD1306
-#define MAX_MISO    PB4		// SPI1 MISO
+#define SD_MISO     PB4		// SPI1 MISO 
 #define OLED_CLK    PB3		// SPI1_SCK - connect to D0 on SSD1306
-// SPI Device pins
-#define MAX_CS      PE11
 #define OLEDCS_1	  PE10
 #define OLED_RESET  PE12
 #define OLED_DC     PE8
+#define MAX_MOSI    PB15  // SPI2 MOSI
+#define MAX_MISO    PB14  // SPI2 MISO
+#define MAX_CLK     PB13  // SPI2 SCK
+#define MAX_CS      PB12  // SPI2 SS
 #define SD_CS       PE13
 
 // Analogue inputs
@@ -48,6 +50,6 @@
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
 
 // For CDC serial
-//#define Serial SerialUSB
+#define Serial SerialUSB
 
 #endif

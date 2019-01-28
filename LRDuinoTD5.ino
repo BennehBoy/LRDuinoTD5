@@ -1,29 +1,39 @@
 // LRDuino by Ben Anderson
-// Version 0.011  (STM32 Only)
+// Version 0.013
+// Please select your display type below by uncommenting ONLY your display type (lines 57-59)
 
 #include <SPI.h>
-SPIClass SPI_2(2); //Create an SPI2 object for MAX31856
 
-#if defined ARDUINO_BLACK_F407VE || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG // STM Core & SDIO
+#if defined ARDUINO_BLACK_F407VE || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG || defined ARDUINO_FK407M1// STM Core & SDIO
 #include "LRDuinoDefs407VE.h"
   #define HAS_SDIO
   #define ARCH_DEFINED
+  SPIClass SPI_2(PB15,PB14,PB13); // Max31856 on MOSI, MISO, CLK - SPI2 on F4,  STM Core
 #endif
 
-#if defined ARDUINO_DIYMROE_F407VGT // STM Core no SDIO
+#if defined ARDUINO_DIYMROE_F407VGT // STM Core SPI SD
   #include "LRDuinoDefs407VE.h"
+  #define ARCH_DEFINED
+  SPIClass SPI_2(PB15,PB14,PB13); // Max31856  on MOSI, MISO, CLK - SPI2 on F4,  STM Core
+#endif
+
+#if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c // Roger's Maple core SPI SD
+  #include "LRDuinoDefsMM.h"
+  SPIClass SPI_2(2); // Max31856  on SPI2
   #define ARCH_DEFINED
 #endif
 
-#if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c || defined ARDUINO_MAPLEMINI_F103CB || defined ARDUINO_BLUEPILL_F103C8 || defined ARDUINO_BLACKPILL_F103C8
+#if defined ARDUINO_MAPLEMINI_F103CB || defined ARDUINO_BLUEPILL_F103C8 || defined ARDUINO_BLACKPILL_F103C8 // STM Core SPI SD
   #include "LRDuinoDefsMM.h"
+  SPIClass SPI_2(PB15,PB14,PB13); // Max31856  on MOSI, MISO, CLK - SPI2 on F1,  STM Core
   #define ARCH_DEFINED
 #endif
 
 #if defined ARDUINO_ARCH_ESP32 // Espressif Core
   #include "LRDuinoDefsESP.h"
-  static const int spiClk = 1000000; // 1 MHz
+  static const int spiClk = 8000000; // 8 MHz
   SPIClass * vspi = NULL;
+  // TODO Break MAX out onto 2nd SPI peripheral
   #define ARCH_DEFINED
 #endif
 

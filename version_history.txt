@@ -1,3 +1,9 @@
+Version 0.13
+SPI2 now utlised for MAX31856 on all variants (exclusing ESP32, TBD).
+FK407M1 support added (this still in PR stage on STM Core)
+Kicad Schematic added
+Fixed Maple_mini pin assignment bug - Boost moved to A0 (PA0)
+
 Version 0.12
 Fixed some drawing issues exiting the menu.
 Fixed flicker issue in menu.

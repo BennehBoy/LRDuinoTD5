@@ -17,10 +17,10 @@
 // HW SPI
 #define OLED_MOSI   PA7		// SPI1_MOSI - connect to D1 on SSD1306
 #define SD_MISO     PA6   // SPI1_MISO
+#define OLED_CLK    PA5   // SPI1_SCK - connect to D0 on SSD1306
 #define OLEDCS_1    PB5
-#define OLED_RESET  PB3   // PA8
-#define OLED_DC     PA15  // PB15
-#define OLED_CLK    PA5		// SPI1_SCK - connect to D0 on SSD1306
+#define OLED_RESET  PB3
+#define OLED_DC     PA15
 #define MAX_MOSI    PB15  // SPI2 MOSI
 #define MAX_MISO    PB14  // SPI2 MISO
 #define MAX_CLK     PB13  // SPI2 SCK
@@ -30,11 +30,11 @@
 
 
 // Analogue inputs
-#define COOL        PA4    // Coolant Level
+#define COOL        PA4   // Coolant Level
 #define OILT        PA3   // Oil Temp
 #define OILP        PA2   // Oil pressure
 #define TBXT        PA1   // tbox temp
-#define BOST        PA5   // boost
+#define BOST        PA0   // boost
 
 // user input
 #define UPBUT		    PC14  //Not available on Black Pill
