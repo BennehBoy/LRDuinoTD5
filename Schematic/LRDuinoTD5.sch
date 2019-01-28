@@ -694,7 +694,7 @@ $EndComp
 Wire Wire Line
 	4950 3050 4650 3050
 Wire Wire Line
-	4650 3050 4650 3300
+	4650 3050 4650 3150
 Wire Wire Line
 	4650 3300 4250 3300
 Wire Wire Line
@@ -982,4 +982,9 @@ Text Notes 7400 7250 0    50   ~ 0
 1
 Text Notes 7150 6750 0    50   ~ 0
 https://github.com/BennehBoy/LRDuinoTD5
+Wire Wire Line
+	4950 3150 4650 3150
+Connection ~ 4650 3150
+Wire Wire Line
+	4650 3150 4650 3300
 $EndSCHEMATC
