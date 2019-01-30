@@ -1,5 +1,5 @@
 // LRDuino by Ben Anderson
-// Version 0.013
+// Version 0.014
 // Please select your display type below by uncommenting ONLY your display type (lines 57-59)
 
 #include <SPI.h>
@@ -7,8 +7,8 @@
 #if defined ARDUINO_BLACK_F407VE || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG || defined ARDUINO_FK407M1// STM Core & SDIO
 #include "LRDuinoDefs407VE.h"
   #define HAS_SDIO
-  #define ARCH_DEFINED
   SPIClass SPI_2(PB15,PB14,PB13); // Max31856 on MOSI, MISO, CLK - SPI2 on F4,  STM Core
+  #define ARCH_DEFINED
 #endif
 
 #if defined ARDUINO_DIYMROE_F407VGT // STM Core SPI SD
@@ -289,6 +289,14 @@ void setup()   {
     analogSetAttenuation(ADC_11db);  //For all pins  = 0-3.3v
   #endif
 
+  #if defined ARDUINO_ARCH_STM32
+    #if defined BOARD_maple_mini || defined BOARD_generic_stm32f103c
+    // do nothing
+    #else
+    analogReadResolution(12); //12 bits
+    #endif
+  #endif
+
   // Pin setup
   pinMode (OLEDCS_1, OUTPUT);
   digitalWrite(OLEDCS_1, HIGH);
@@ -299,7 +307,6 @@ void setup()   {
 
   #if defined ARDUINO_BLACK_F407VE || defined ARDUINO_BLACK_F407ZE || defined ARDUINO_BLACK_F407ZG
     pinMode (PA0, INPUT_PULLDOWN); //Button K_UP
-    analogReadResolution(12);
   #endif
 
   MAXInitializeChannel(MAX_CS); // Init the MAX31856 
@@ -316,10 +323,10 @@ void setup()   {
   {
     display1.fillScreen(BLACK);
     display1.setTextColor(RED);
-	  display1.setTextSize(1);
+    display1.setTextSize(1);
     display1.setCursor(0, 0);
     display1.println("SD init failed.");
-	  SCREEN_DISPLAY();
+    SCREEN_DISPLAY();
     delay(200);
     display1.fillScreen(BLACK);
     sd_present = false;
@@ -336,71 +343,72 @@ void loop() {
   unsigned long currentMillis = millis(); //store the time
 
   // USER INTERACTION
- 	if((currentMillis - inptimeoutMillis > MENUTIMEOUT) && (inMenu==true)) {  //timeout the menu 
-		inMenu=false;
+  if((currentMillis - inptimeoutMillis > MENUTIMEOUT) && (inMenu==true)) {  //timeout the menu 
+  inMenu=false;
     SCREEN_CLEAR();
-	}
-   if(exitMenu == true) {  //clear the menu if we exited
+  }
+  
+  if(exitMenu == true) {  //clear the menu if we exited
     exitMenu=false;
     SCREEN_CLEAR();
   }
  
- 	if ((!inMenu) && (btn_enter.sense() == buttons_held)) {
-		inMenu=true; // turn the menu on if we have a long press on the enter button
-		inptimeoutMillis = currentMillis;
-	}
- 	if (inMenu) {
-		if (currentMillis - menuMillis > BUT_DELAY) {
-			menuMillis = currentMillis;
-			if (btn_up.sense() == buttons_debounce) {
-				nav.doNav(upCmd); // navigate up
-				inptimeoutMillis = currentMillis;
-			} else if (btn_down.sense() == buttons_debounce) {
-				nav.doNav(downCmd); // navigate down
-				inptimeoutMillis = currentMillis;
-			} else if (btn_enter.sense() == buttons_debounce) {
-				nav.doNav(enterCmd); // do current command
-				inptimeoutMillis = currentMillis;
-			}
-			//nav.active().dirty=true;//for a menu
-			//nav.navFocus->dirty=true;//should invalidate also full screen fields assert(nav.navFocus!=NULL)
-			nav.doOutput(); //need to use this as .poll also processes input
+  if ((!inMenu) && (btn_enter.sense() == buttons_held)) {
+    inMenu=true; // turn the menu on if we have a long press on the enter button
+    inptimeoutMillis = currentMillis;
+  }
+  if (inMenu) {
+    if (currentMillis - menuMillis > BUT_DELAY) {
+      menuMillis = currentMillis;
+      if (btn_up.sense() == buttons_debounce) {
+        nav.doNav(upCmd); // navigate up
+        inptimeoutMillis = currentMillis;
+      } else if (btn_down.sense() == buttons_debounce) {
+        nav.doNav(downCmd); // navigate down
+        inptimeoutMillis = currentMillis;
+      } else if (btn_enter.sense() == buttons_debounce) {
+        nav.doNav(enterCmd); // do current command
+        inptimeoutMillis = currentMillis;
+      }
+      //nav.active().dirty=true;//for a menu
+      //nav.navFocus->dirty=true;//should invalidate also full screen fields assert(nav.navFocus!=NULL)
+      nav.doOutput(); //need to use this as .poll also processes input
       SCREEN_DISPLAY();
-		}
-	}
+    }
+  }
   // left rotation requested
   if (btn_left.sense() == buttons_debounce) { 
-	  if (currentMillis - previousMillis > BUT_DELAY) {
-		  rotation = rotation + 1; // rotate the screens if the button was pressed
+    if (currentMillis - previousMillis > BUT_DELAY) {
+      rotation = rotation + 1; // rotate the screens if the button was pressed
       display1.fillScreen(BLACK);
-		  previousMillis = previousMillis - (INTERVAL + 1); // force an update of the screens.
-		  if (sensecount < NUM_DISPLAYS) {
-			  if (rotation == NUM_DISPLAYS) { // if we have less than 8 sensors, keep rotating until we hit the screen count
-				  rotation = 0;
-			  }
-		  } else {
-			  if (rotation == sensecount) { // otherwise rotate until we hit the last sensor
-				  rotation = 0;
-			  }
-		  }
+      previousMillis = previousMillis - (INTERVAL + 1); // force an update of the screens.
+      if (sensecount < NUM_DISPLAYS) {
+        if (rotation == NUM_DISPLAYS) { // if we have less than 8 sensors, keep rotating until we hit the screen count
+          rotation = 0;
+        }
+      } else {
+        if (rotation == sensecount) { // otherwise rotate until we hit the last sensor
+          rotation = 0;
+        }
+      }
     }
   }
   
   // right rotation requested
   if (btn_right.sense() == buttons_debounce) { 
-	  if (currentMillis - previousMillis > BUT_DELAY) {
-		  rotation = rotation - 1; // rotate the screens if the button was pressed
+    if (currentMillis - previousMillis > BUT_DELAY) {
+      rotation = rotation - 1; // rotate the screens if the button was pressed
       display1.fillScreen(BLACK);
-		  previousMillis = previousMillis - (INTERVAL + 1); // force an update of the screens.
-		  if (sensecount < NUM_DISPLAYS) {
-			  if (rotation == 0) { // if we have less than 8 sensors, keep rotating until we hit the screen count
-			  	rotation = NUM_DISPLAYS;
-			  }
-		  } else {
-			  if (rotation == 0) { // otherwise rotate until we hit the last sensor
-				  rotation = sensecount;
-			  }
-		  }
+      previousMillis = previousMillis - (INTERVAL + 1); // force an update of the screens.
+      if (sensecount < NUM_DISPLAYS) {
+        if (rotation == 0) { // if we have less than 8 sensors, keep rotating until we hit the screen count
+          rotation = NUM_DISPLAYS;
+        }
+      } else {
+        if (rotation == 0) { // otherwise rotate until we hit the last sensor
+          rotation = sensecount;
+        }
+      }
     }
   }
   
@@ -416,137 +424,81 @@ void loop() {
         td5.disconnectFromEcu();
       }
     }
-	
-    // SENSOR READING
-    if (Sensors[0].senseactive) {
-      Sensors[0].senselastvals = Sensors[0].sensevals; // store previous readin (helps with screen drawing)
-      Sensors[0].sensevals = readBoost(BOST, 0); // read boost off A0 and store at index 0
-      processPeak(0); // TURBO
-      audibleWARN(0);
-    }
-
-    if (Sensors[1].senseactive) {
-      Sensors[1].senselastvals = Sensors[1].sensevals; // store previous readin (helps with screen drawing)
-      Sensors[1].sensevals = readERR2081(TBXT, 1); // read A1, currently the Gearbox oil temp sensor
-      processPeak(1); // TBOX OIL TEMP
-      audibleWARN(1);
-    }
-
-    if (Sensors[2].senseactive) {
-      Sensors[2].senselastvals = Sensors[2].sensevals; // store previous readin (helps with screen drawing)
-      Sensors[2].sensevals = readMAX(2); //read EGT from the Max31856
-      processPeak(2); // EGT
-      audibleWARN(2);
-    }
-
-    if (Sensors[3].senseactive) {
-      Sensors[3].senselastvals = Sensors[3].sensevals; // store previous readin (helps with screen drawing)
-      Sensors[3].sensevals = readPress(OILP, 3); // read oil pressure using Chinese 0-100psi absolute sensor, (output voltage max=5v)
-      processPeak(3); // OIL PRESSURE
-      audibleWARN(3);
-    }
-
-    if (Sensors[4].senseactive) {
-      Sensors[4].senselastvals = Sensors[4].sensevals; // store previous readin (helps with screen drawing)
-      Sensors[4].sensevals = readERR2081(OILT, 4); // read the Engine oil temp sensor
-      processPeak(4); // OIL TEMP
-      audibleWARN(4);
-    }
-
-    if (Sensors[5].senseactive) {
-      Sensors[5].senselastvals = Sensors[5].sensevals; // store previous readin (helps with screen drawing)
-      Sensors[5].sensevals = readCoolantLevel(COOL, 5); // check if coolant level is low - needs to be pulled down to earth (switch is normally closed)
-      audibleWARN(5);
-      //processPeak(5); // Coolant Level - no need to set a max as this is boolean
-    }
-
-    if (Sensors[6].senseactive) { // OBD sensor 
-		  if (td5.ecuIsConnected()) {
-			  if(td5.getPid(&pidRPM) > 0) {
-          Sensors[6].senselastvals = Sensors[6].sensevals; // store previous readin (helps with screen drawing)
-				  Sensors[6].sensevals = pidRPM.getlValue(); // RPM
-			  }
-		  }
-    }
-  
-   	if (Sensors[7].senseactive) { // OBD sensor 
-		  if (td5.ecuIsConnected()) {
-			  if(td5.getPid(&pidVehicleSpeed) > 0) {
-          Sensors[7].senselastvals = Sensors[7].sensevals; // store previous readin (helps with screen drawing)		
-				  Sensors[7].sensevals = pidVehicleSpeed.getbValue(0); // Speed
-			  }
-		  }
-	  } 
-		
-  	if (Sensors[8].senseactive) { // OBD sensor 
-		  if (td5.ecuIsConnected()) {
-			  if(td5.getPid(&pidTemperatures) > 0) {
-          Sensors[8].senselastvals = Sensors[8].sensevals; // store previous readin (helps with screen drawing)
-				  Sensors[8].sensevals = pidTemperatures.getfValue(0); // Coolant Temp
-			  }
-		  }
-	    audibleWARN(8);
-	  } 	
-
-  	if (Sensors[9].senseactive) { // OBD sensor 
-		  if (td5.ecuIsConnected()) {
-			  if(td5.getPid(&pidBatteryVoltage) > 0) {
-          Sensors[9].senselastvals = Sensors[9].sensevals; // store previous readin (helps with screen drawing)
-				  Sensors[9].sensevals = pidBatteryVoltage.getfValue(); // Battery Voltage
-			  }
-		  }
-	    audibleWARN(9);
-	  } 	
-
-  	if (Sensors[10].senseactive) { // OBD sensor 
-		  if (td5.ecuIsConnected()) {
-			  if(td5.getPid(&pidTemperatures) > 0) {
-          Sensors[10].senselastvals = Sensors[10].sensevals; // store previous readin (helps with screen drawing)
-				  Sensors[10].sensevals = pidTemperatures.getfValue(1); // Inlet Temp
-			  }
-		  }
-	    audibleWARN(10);
-	  } 
-	
-  	if (Sensors[11].senseactive) { // OBD sensor 
-		  if (td5.ecuIsConnected()) {
-			  if(td5.getPid(&pidTemperatures) > 0) {
-          Sensors[11].senselastvals = Sensors[11].sensevals; // store previous readin (helps with screen drawing)
-				  Sensors[11].sensevals = pidTemperatures.getfValue(3); // Fuel Temp
-			  }
-		  }
-	    audibleWARN(11);
-	  }
-	
-  	if (Sensors[12].senseactive) { // OBD sensor 
-		  if (td5.ecuIsConnected()) {
-			  if(td5.getPid(&pidAmbientPressure) > 0) {
-          Sensors[12].senselastvals = Sensors[12].sensevals; // store previous readin (helps with screen drawing)
-				  Sensors[12].sensevals = pidAmbientPressure.getfValue(1); // AAP
-			  }
-		  }
-	  audibleWARN(12);
-	  } 
-
-  	if(dataLog == true) {
-  		writeDatalogline();  // write out the last readings if we're logging
-  	}
-	
-    // DRAW DISPLAYS
-  	if (!inMenu) {
-      drawDISPLAY(display1, 1);
-  	}
+    
+    // ********NEW*********
+  for(uint8_t currentsensor=0; currentsensor < totalsensors; currentsensor++ ){
+      if (Sensors[currentsensor].senseactive) {
+        Sensors[currentsensor].senselastvals = Sensors[currentsensor].sensevals; // stash the previous value
+        switch(Sensors[currentsensor].sensetype) { // switch based upon the sensor type
+          case ERR2081  :
+            Sensors[currentsensor].sensevals = readERR2081(Sensors[currentsensor].sensepin, currentsensor);
+            break; //optional
+          case KTYPE  :
+            Sensors[currentsensor].sensevals = readMAX(currentsensor); // no pin supplied since this is over SPI
+            break; //optional
+          case BOOST3BAR  :
+            Sensors[currentsensor].sensevals = readBoost(Sensors[currentsensor].sensepin, currentsensor);
+            break; //optional
+          case CH100PSI  :
+            Sensors[currentsensor].sensevals = readPress(Sensors[currentsensor].sensepin, currentsensor);
+            break; //optional
+          case EARTHSW  :
+            Sensors[currentsensor].sensevals = readCoolantLevel(Sensors[currentsensor].sensepin, currentsensor);
+            break; //optional
+          case OBD  :
+            if (td5.ecuIsConnected()) {
+              switch(Sensors[currentsensor].sensepin) { // if it's OBD switch based upon the PID
+                case OBDRPM  :
+                  if(td5.getPid(&pidRPM) > 0) {
+                  Sensors[currentsensor].sensevals = pidRPM.getlValue(); // RPM
+                  }
+                  break;
+                case OBDSPD  :
+                  if(td5.getPid(&pidVehicleSpeed) > 0) {
+                    Sensors[currentsensor].sensevals = pidVehicleSpeed.getbValue(0); // Speed
+                  }
+                  break;
+                case OBDECT  :
+                  if(td5.getPid(&pidTemperatures) > 0) {
+                    Sensors[currentsensor].sensevals = pidTemperatures.getfValue(0); // Coolant Temp
+                  }
+                  break;
+                case OBDBTV  :
+                  if(td5.getPid(&pidBatteryVoltage) > 0) {
+                    Sensors[currentsensor].sensevals = pidBatteryVoltage.getfValue(); // Battery Voltage
+                  }
+                  break;
+                case OBDINT  :
+                  if(td5.getPid(&pidTemperatures) > 0) {
+                    Sensors[currentsensor].sensevals = pidTemperatures.getfValue(1); // Inlet Temp
+                  }
+                  break;
+                case OBDFLT  :
+                  if(td5.getPid(&pidTemperatures) > 0) {
+                    Sensors[currentsensor].sensevals = pidTemperatures.getfValue(3); // Fuel Temp
+                  }
+                  break;
+                case OBDAAP  :
+                  if(td5.getPid(&pidAmbientPressure) > 0) {
+                    Sensors[currentsensor].sensevals = pidAmbientPressure.getfValue(1); // AAP
+                  }
+                  break;
+              } // OBD PID switch
+            } // if ECU is connected
+            break; //optional
+        } // Sensor type switch
+        processPeak(currentsensor);  // update the highest value if it's been exceeded - useful for graphs.
+        audibleWARN(currentsensor);  // issue tones if there's an issue
+      }
   }
-  
-	// 500 millis interval
- 	if (currentMillis - OBDfastMillis > OBDFAST) { // only read these sensors if 400 millis have passed
-		// save the last time we updated
-		OBDfastMillis = currentMillis;
-	}
 
-	// 1000 Millis interval
-	if (currentMillis - OBDslowMillis > OBDSLOW) { // only read these sensors if 600 millis have passed
-		// save the last time we updated
-		OBDslowMillis = currentMillis;
-	}
+    if(dataLog == true) {
+      writeDatalogline();  // write out the last readings if we're logging
+    }
+  
+    // DRAW DISPLAYS
+    if (!inMenu) {
+      drawDISPLAY(display1, 1);
+    }
+  }
 } // Void Loop()

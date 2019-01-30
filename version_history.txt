@@ -1,3 +1,8 @@
+Version 0.14
+Fix analogue resolution on STM Core
+Overhauled the sensor structure and how sensors are referenced - substituted definitiosn for hardcoded sensor id's - this makes added new sensors much simpler, and lays the foundation for dynamic menu handling.  Also allows OBD to be an optional compile time definition.
+Minor schematic fix (not functionally different).
+
 Version 0.13
 SPI2 now utlised for MAX31856 on all variants (exclusing ESP32, TBD).
 FK407M1 support added (this still in PR stage on STM Core)

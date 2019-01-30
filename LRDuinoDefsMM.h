@@ -13,9 +13,9 @@
 #define MENUTIMEOUT 10000
 #define _FAULT_CODES_STRINGS_
 
-#define PIEZO       PB0		// PWM for piezo
+#define PIEZO       PB0   // PWM for piezo
 // HW SPI
-#define OLED_MOSI   PA7		// SPI1_MOSI - connect to D1 on SSD1306
+#define OLED_MOSI   PA7   // SPI1_MOSI - connect to D1 on SSD1306
 #define SD_MISO     PA6   // SPI1_MISO
 #define OLED_CLK    PA5   // SPI1_SCK - connect to D0 on SSD1306
 #define OLEDCS_1    PB5
@@ -25,9 +25,7 @@
 #define MAX_MISO    PB14  // SPI2 MISO
 #define MAX_CLK     PB13  // SPI2 SCK
 #define MAX_CS      PB12  // SPI2 SS
-#define SD_CS		    PA8
-
-
+#define SD_CS       PA8
 
 // Analogue inputs
 #define COOL        PA4   // Coolant Level
@@ -37,15 +35,15 @@
 #define BOST        PA0   // boost
 
 // user input
-#define UPBUT		    PC14  //Not available on Black Pill
-#define DOWNBUT		  PB6
-#define LEFTBUT		  PC15  //Not available on Black Pill
-#define RIGHTBUT	  PB7
+#define UPBUT       PC14  //Not available on Black Pill
+#define DOWNBUT     PB6
+#define LEFTBUT     PC15  //Not available on Black Pill
+#define RIGHTBUT    PB7
 #define SELBUT      PC13
 
 //K-Line - Serial3
-#define K_OUT       PB10	//TX3
-#define K_IN        PB11	//RX3
+#define K_OUT       PB10  //TX3
+#define K_IN        PB11  //RX3
 
 // MAX31856 registers
 #define NumRegisters 10

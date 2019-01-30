@@ -4,30 +4,38 @@ void initOBD(void) {
 	if(!td5.connectToEcu(false)) {	
 		disableOBDSensors();
 	} else {
- 		for (uint8_t i=9; i < totalsensors; i++) {
-			if (Sensors[i].warnstatus == true) { // already disabled so set warnstatus to true - we'll use this as temp storage so we don't re-enable if OBD gets re-initialised
-				Sensors[i].senseactive = false; // should already be false but no harm in making sure
-				Sensors[i].warnstatus = false;
-			} else {
-				Sensors[i].senseactive = true;
-				Sensors[i].warnstatus = false;
-			}
-		}
+    enableOBDSensors();
 		getSensecount();
 	}
 }
 
+void enableOBDSensors(void) {
+  for(uint8_t i=0; i < totalsensors; i++ )  {
+    if (Sensors[i].sensetype == OBD ) {
+      if (Sensors[i].warnstatus == true) { // already disabled so set warnstatus to true - we'll use this as temp storage so we don't re-enable if OBD gets re-initialised
+        Sensors[i].senseactive = false; // should already be false but no harm in making sure
+        Sensors[i].warnstatus = false;
+      } else {
+        Sensors[i].senseactive = true;
+        Sensors[i].warnstatus = false;
+      }
+    }
+  }
+}
+
 void disableOBDSensors(void) {
-		for (uint8_t i=6; i < totalsensors; i++) {
-			if (Sensors[i].senseactive == false) { // already disabled so set warnstatus to true - we'll use this as temp storage so we don't re-enable if OBD gets re-initialised
-				Sensors[i].senseactive = false;
-				Sensors[i].warnstatus = true;
-			} else {
-				Sensors[i].senseactive = false;
-				Sensors[i].warnstatus = false;
-			}
-		}
-	getSensecount();
+  for(uint8_t i=0; i < totalsensors; i++ )  {
+    if (Sensors[i].sensetype == OBD ) {
+		  if (Sensors[i].senseactive == false) { // already disabled so set warnstatus to true - we'll use this as temp storage so we don't re-enable if OBD gets re-initialised
+			  Sensors[i].senseactive = false;
+			  Sensors[i].warnstatus = true;
+		  } else {
+			  Sensors[i].senseactive = false;
+			  Sensors[i].warnstatus = false;
+		  }
+	  }
+  }
+getSensecount();
 }
 
 void getSensecount(void) {
@@ -123,7 +131,7 @@ void writeDatalogline(void) {
 
 bool processHiLo(uint8_t sensor, bool toggle) {
   // this function toggles a an error flag if the current sensor is above it's high warning parameter or below it's low warning paramater - since the display is redrawn every 250ms it appears to flash
-  if (Sensors[sensor].sensefault > 0 && sensor != 5) { // we don't want to display a high or low warning if there's a sensor fault (ie wiring issue etc).
+  if (Sensors[sensor].sensefault > 0 && Sensors[sensor].sensetype == EARTHSW) { // we don't want to display a high or low warning if there's a sensor fault on an earth switched device (ie wiring issue etc).
     return (false);
   }
   if (Sensors[sensor].sensevals > Sensors[sensor].sensewarnhivals || Sensors[sensor].sensevals < Sensors[sensor].sensewarnlowvals) { // if we're under the min or over the max then warn!
@@ -214,7 +222,7 @@ String getValIfNoErr(uint8_t sensor, bool prev) { //prevents values being displa
   //String text = String(Sensors[sensor].sensevals);
   // if a fault is set return an empty string
 
-  if (sensor == 5 && Sensors[sensor].sensefault == 0) {
+  if ((Sensors[sensor].sensetype == EARTHSW) && (Sensors[sensor].sensefault == 0)) {
     return ("ok");
   }
   if (Sensors[sensor].sensefault > 0) {

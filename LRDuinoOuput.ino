@@ -16,10 +16,10 @@ void drawDISPLAY(SCREEN_TYPE &refDisp, uint8_t index) { // DISPLAY 1 is our Main
   
   if (sensor0 == -1) {
   // don't draw anything because there are less sensors than displays
-  } else if (Sensors[sensor0].slaveID != 99) { // draw paired sensors
+  } else if (Sensors[sensor0].slaveID != MASTER) { // draw paired sensors
     drawSensor(0, 0, refDisp, sensor0, true);
     drawSensor(33, 0, refDisp, Sensors[sensor0].slaveID, true);
-  } else if ((sensor0 == 2)) { // draw a bargraph
+  } else if (Sensors[sensor0].sensetype == KTYPE) { // draw a bargraph
     drawSensor(0, 0, refDisp, sensor0, true); 
     drawBarGraph(refDisp, sensor0);
   } else {
