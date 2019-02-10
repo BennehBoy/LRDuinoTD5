@@ -87,7 +87,7 @@ void drawBIG(SCREEN_TYPE &refDisp, uint8_t sensor) {
     refDisp.setFont(&FreeSansBoldOblique12pt7b); //switch to a nice ttf font 12x7
     charpad = 16;
   }
-  refDisp.drawBitmap(SCREENWIDTH-32, 34, Sensors[sensor].senseglyphs, 32, 32, GREEN); //draw the sensor icon
+  refDisp.drawBitmap(SCREENWIDTH-32, (SCREENHEIGHT-30), Sensors[sensor].senseglyphs, 32, 32, GREEN); //draw the sensor icon
   xposition = (SCREENWIDTH/2)-(((getUnits(sensor).length())*charpad)/2);  // work out our drawing location
   drawItem(xposition, (SCREENHEIGHT-6), getUnits(sensor), 1, refDisp); // and draw the units, 6 is custom font baseline adjustment
   if (SCREENWIDTH < 128) {

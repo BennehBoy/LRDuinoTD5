@@ -26,6 +26,7 @@
 #if defined ARDUINO_MAPLEMINI_F103CB || defined ARDUINO_BLUEPILL_F103C8 || defined ARDUINO_BLACKPILL_F103C8 // STM Core SPI SD
   #include "LRDuinoDefsMM.h"
   SPIClass SPI_2(PB15,PB14,PB13); // Max31856  on MOSI, MISO, CLK - SPI2 on F1,  STM Core
+  #define Serial SerialUSB
   #define ARCH_DEFINED
 #endif
 
@@ -117,7 +118,7 @@ Button btn_enter(SELBUT, LOW);
 // end settings reading section
 
 uint8_t sensecount = 0;
-uint8_t rotation = 3; // incremented by 1 with each button press - it's used to tell the drawdisplay functions which sensor data they should output.
+uint8_t rotation = 0; // incremented by 1 with each button press - it's used to tell the drawdisplay functions which sensor data they should output.
 
 // the follow variable is a long because the time, measured in miliseconds,
 // will quickly become a bigger number than can be stored in an int.
