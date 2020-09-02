@@ -1,3 +1,18 @@
+Version 0.17
+Cleaned up some drawing code
+Removed OBD code - simply not going to be used
+Added a vertical bar graph
+Cleaned up menus
+ESP support currently broken - needs interupt code adding for encoder
+Fixed 4bar boost sensor code
+
+Version 0.16
+Added F401CC & F303CC support
+Changed input to a clickable rotary encoder
+
+Version 0.15
+Fix Schematic - pulldowns not pullups
+
 Version 0.14
 Fix analogue resolution on STM Core
 Overhauled the sensor structure and how sensors are referenced - substituted definitiosn for hardcoded sensor id's - this makes added new sensors much simpler, and lays the foundation for dynamic menu handling.  Also allows OBD to be an optional compile time definition.

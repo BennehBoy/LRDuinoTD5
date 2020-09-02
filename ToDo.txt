@@ -4,18 +4,11 @@ Fix F4 datalogging
 
 Default sensor setting - user can select which sensor is the default at startup.
 
-Save settings - to flash? to SD?
+Save settings - to flash ? to SD ?
 
-Read settings - from flash? from SD?
+Read settings - from flash ? from SD ?
 
 Add fuel pressure sensor
 
-Make OBD optional - via #define - this will require a menu overhaul & sensor array overhaul - currently the menu's are hard coded, it would be better to dynamically build them based upon the content of the sensors array.
+Sensor Order - user can move sensors left / right in the viewing order.
 
-Sensor Order - user can move sensors left/right in the viewing order.
-
-OBD - read faults.
-
-OBD - clear faults.
-
-Document L9637D schematic

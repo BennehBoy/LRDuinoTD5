@@ -4,14 +4,11 @@
 #define LRDuinoDefsMM_h
 
 #define NUM_DISPLAYS 1
-#define INTERVAL 	250
-#define OBDFAST		400
-#define OBDSLOW		600
-#define BUT_DELAY 	100
-#define MAX_DEPTH 	3
+#define INTERVAL  250
+#define BUT_DELAY   100
+#define MAX_DEPTH   3
 #define DIVISOR     4095
 #define MENUTIMEOUT 10000
-#define _FAULT_CODES_STRINGS_
 
 #define PIEZO       0     // PWM for piezo
 // HW SPI
@@ -26,11 +23,14 @@
 #define OLED_DC     16
 
 // Analogue inputs
-#define COOL        32		// Coolant Level
-#define OILT        35		// Oil Temp
-#define OILP        34		// Oil pressure
-#define TBXT        39		// tbox temp
-#define BOST        36		// boost
+#define COOL        32    // Coolant Level
+#define OILT        35    // Oil Temp
+#define OILP        34    // Oil pressure
+#define TBXT        39    // tbox temp
+#define BOST        36    // boost
+#define GBOP        34    // Gearbox Pressure  - PLACEHOLDER PINS
+#define GBOT        35    // Gearbox Temp  - PLACEHOLDER PINS
+#define FULP        34    // Fuel Pressure  - PLACEHOLDER PINS
 
 // user input
 #define UPBUT       33    //12
@@ -38,10 +38,6 @@
 #define LEFTBUT     26    //29
 #define RIGHTBUT    27    //30
 #define SELBUT      14    //31 
-
-//K-Line - Serial3
-#define K_OUT       10    //TX3
-#define K_IN        9     //RX3
 
 // MAX31856 registers
 #define NumRegisters 10

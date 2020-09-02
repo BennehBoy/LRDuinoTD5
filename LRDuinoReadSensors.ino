@@ -1,6 +1,7 @@
 // Sensor reading code.
 
-int readERR2081(uint8_t sensor, uint8_t index) {
+int readERR2081(uint8_t sensor, uint8_t index)
+{
   int raw = 0;     // variable to store the raw ADC input value
   float Vin = 3.3; // variable to store the measured VCC voltage
   float Vout = 0;  // variable to store the output voltage
@@ -22,28 +23,32 @@ int readERR2081(uint8_t sensor, uint8_t index) {
   return (processConstraints(DIVISOR / 100, raw, int(steinhart), index));
 }
 
-int readBoost(uint8_t sensor, uint8_t index) {
+int readBoost(uint8_t sensor, uint8_t index)
+{
   int rawval;
   float kpaval;
   float boost;
-  //mV per mB = 2640mv/6894.76mb  = 0.3828  (this is for 3.3v STM32)
-  //mv per ADC = 3300mv/4095 = 0.80586
-  //mb per ADC = 2.1052
-  rawval = analogRead(sensor);       // Read MAP sensor raw value on analog port 0
-  kpaval = rawval * 0.4878;             // convert to kpa
-  boost = kpaval * 0.145038 - 14.5038;  // Convert to psi and subtract atmospheric (sensor is absolute pressure)
+  //mb per ADC = 4095/5000 = 1.2195
+  //kpaval = (rawval*1.2195)/10
+  //boost = (kpaval * 0.145038) - 14.5038
+  rawval = analogRead(sensor);    // Read MAP sensor raw value on analog port 0
+  kpaval = (rawval * 1.2195)/10;  // convert to kpa
+  boost = (kpaval * 0.145038) - 14.5038;  // Convert to psi and subtract atmospheric (sensor is absolute pressure)
   // process any faults
   // Sensors should be connected with a 10K / 20K pulldown dividor to map the 5v output to 3.3v
+  Serial.println(rawval);
   return (processConstraints(DIVISOR / 100, rawval, int(boost), index));
 }
 
-int readMAX(uint8_t index) {
+int readMAX(uint8_t index)
+{
   int t = int(MAXReadTemperature(MAX_CS));
   // process any faults
   return (processConstraints(MAXreadFault(MAX_CS), 0, t, index));
 }
 
-int readPress(uint8_t sensor, uint8_t index) {
+int readPress(uint8_t sensor, uint8_t index)
+{
   int rawval;
   long kpaval;
   long oilpress;
@@ -53,14 +58,15 @@ int readPress(uint8_t sensor, uint8_t index) {
   //mb per ADC = 0.80586/0.386   == 2.0877
   //offset = 330/0.80586 = 409 ADC's
   rawval = analogRead(sensor);       // Read MAP sensor raw value on analog port 0
-  kpaval = ((rawval-409) * 2.0877)/10;             // convert to kpa
+  kpaval = ((rawval - 409) * 2.0877) / 10;         // convert to kpa
   oilpress = (kpaval * 0.145038); //Convert to psi - sensor is already relative to atmospheric
   // process any faults
   // Sensors should be connected with a 10K / 20K pulldown dividor to map the 5v output to 3.3v
   return (processConstraints(DIVISOR / 100, rawval, int(oilpress), index));
 }
 
-bool readCoolantLevel(uint8_t sensor, uint8_t index) {
+bool readCoolantLevel(uint8_t sensor, uint8_t index)
+{
   // sensor is normally closed
   // use a pulldown resistor to enable fault monitoring
   int CoolantLevel;
@@ -71,17 +77,20 @@ bool readCoolantLevel(uint8_t sensor, uint8_t index) {
 
 // MAX31856 SPI CODE
 
-void MAXInitializeChannel(int Pin) {
+void MAXInitializeChannel(int Pin)
+{
   for (int i = 0; i < NumRegisters; i++) {
     MAXWriteRegister(Pin, i, RegisterValues[i]);
   }
 }
 
-uint8_t MAXreadFault(int Pin) {
+uint8_t MAXreadFault(int Pin)
+{
   return MAXReadSingleRegister(Pin, 0x0F);
 }
 
-byte MAXReadSingleRegister(int Pin, byte Register) {
+byte MAXReadSingleRegister(int Pin, byte Register)
+{
   SPI_2.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE3));
   digitalWrite(Pin, LOW);
   delayMicroseconds(1);
@@ -93,7 +102,8 @@ byte MAXReadSingleRegister(int Pin, byte Register) {
   return data;
 }
 
-unsigned long MAXReadMultipleRegisters(int Pin, byte StartRegister, int count) {
+unsigned long MAXReadMultipleRegisters(int Pin, byte StartRegister, int count)
+{
   //reads up to 4 sequential registers
   SPI_2.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE3));
   digitalWrite(Pin, LOW);
@@ -109,7 +119,8 @@ unsigned long MAXReadMultipleRegisters(int Pin, byte StartRegister, int count) {
   return data;
 }
 
-void MAXWriteRegister(int Pin, byte Register, byte Value) {
+void MAXWriteRegister(int Pin, byte Register, byte Value)
+{
   byte Address = Register | 0x80; //Set bit 7 high for a write command
   SPI_2.beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE3));
   digitalWrite(Pin, LOW);
@@ -121,7 +132,8 @@ void MAXWriteRegister(int Pin, byte Register, byte Value) {
   SPI_2.endTransaction();
 }
 
-double MAXReadTemperature(int Pin) {
+double MAXReadTemperature(int Pin)
+{
   double temperature;
   long data;
   data = MAXReadMultipleRegisters(Pin, 0x0C, 4);
