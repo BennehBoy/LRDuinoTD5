@@ -28,12 +28,14 @@ int readBoost(uint8_t sensor, uint8_t index)
   int rawval;
   float kpaval;
   float boost;
-  //mb per ADC = 4095/5000 = 1.2195
-  //kpaval = (rawval*1.2195)/10
-  //boost = (kpaval * 0.145038) - 14.5038
+  //Sensor slope = MaxV - MinV / MaxP - MinP    ==   2640 - 0 / 4000 - 0   === 0.66 mv per millibar  -1bar = 1v 0bar = 2v 1 bar =3v  (2640 is equivalent of 3bar at 4v when using 2.3v logic)
+  //mv per ADC = 3300mv/4095 = 0.80586
+  //mb per ADC = 0.80586/0.66   == 1.221
+  //offset = 330/0.80586 = 409 ADC's
   rawval = analogRead(sensor);    // Read MAP sensor raw value on analog port 0
-  kpaval = (rawval * 1.2195)/10;  // convert to kpa
+  kpaval = (rawval * 1.221)/10;  // convert to kpa
   boost = (kpaval * 0.145038) - 14.5038;  // Convert to psi and subtract atmospheric (sensor is absolute pressure)
+  
   // process any faults
   // Sensors should be connected with a 10K / 20K pulldown dividor to map the 5v output to 3.3v
   Serial.println(rawval);
@@ -53,7 +55,7 @@ int readPress(uint8_t sensor, uint8_t index)
   long kpaval;
   long oilpress;
   //100 psi Chinese Transducer
-  //Sensor slope = MaxV - MinV / MaxP - MinP    ==   3000 - 333 / 6894 - 0   === 0.386 mv per millibar
+  //Sensor slope = MaxV - MinV / MaxP - MinP    ==   3000 - 333 / 6894 - 0   === 0.386 mv per millibar  0.5v @ 0psi 4.5v @100psi
   //mv per ADC = 3300mv/4095 = 0.80586
   //mb per ADC = 0.80586/0.386   == 2.0877
   //offset = 330/0.80586 = 409 ADC's

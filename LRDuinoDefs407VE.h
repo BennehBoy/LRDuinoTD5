@@ -39,6 +39,10 @@
 #define RIGHTBUT    PB7
 #define SELBUT      PB8
 
+//K-Line - Serial3
+#define K_OUT       PB10  //TX3
+#define K_IN        PB11  //RX3
+
 // MAX31856 registers
 #define NumRegisters 10
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))

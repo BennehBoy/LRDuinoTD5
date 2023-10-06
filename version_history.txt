@@ -1,3 +1,8 @@
+Version 0.18-0.19
+Removed Menus
+Removed ESP support
+Re-added OBD code for fuel consumption
+
 Version 0.17
 Cleaned up some drawing code
 Removed OBD code - simply not going to be used

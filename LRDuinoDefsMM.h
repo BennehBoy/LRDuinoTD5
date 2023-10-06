@@ -35,9 +35,13 @@
 #define FULP        PA2   // Fuel Pressure  - PLACEHOLDER PINS (not enough ADC on MM)
 
 // user input
-#define LEFTBUT     PB6
-#define RIGHTBUT    PB7
+#define LEFTBUT     PC14
+#define RIGHTBUT    PC15
 #define SELBUT      PC13
+
+//K-Line - Serial3
+#define K_OUT       PB10  //TX3
+#define K_IN        PB11  //RX3
 
 // MAX31856 registers
 #define NumRegisters 10

@@ -12,26 +12,36 @@
 
 void drawDISPLAY(SCREEN_TYPE &refDisp, uint8_t index)   // DISPLAY 1 is our Main guage display
 {
+  // we only draw things when vlaues have changed
+  int8_t sensor0 = processRotation(index);  //this gets us the id of the current sensor
 
-  int8_t sensor0 = processRotation(index);
-
-  if (sensor0 == -1) {
-    // don't draw anything because there are less sensors than displays
+  if (sensor0 == -1) { // don't draw anything because there are less sensors than displays
+  } else if (Sensors[sensor0].slaveID == OBDCON) { // Fuel consumption output - where we combine sensors and do calculations)
+    if ((Sensors[sensor0].sensevals != Sensors[sensor0].senselastvals) || rotated == 1) {
+      drawSensor(0, 0, refDisp, sensor0, true); // 12 = our fake storage sensor (see td5sensors.h)
+      drawBarGraph(refDisp, sensor0);
+    }
   } else if (Sensors[sensor0].slaveID != MASTER) { // draw paired sensors
-    drawSensor(0, 0, refDisp, sensor0, true);
+    if ((Sensors[sensor0].sensevals != Sensors[sensor0].senselastvals) || rotated == 1) {
+      drawSensor(0, 0, refDisp, sensor0, true);
+      drawSensor(0, SCREENHEIGHT/2, refDisp, Sensors[sensor0].slaveID, true);
+    }
     drawWarnings(SCREENWIDTH - 24, 0, sensor0, refDisp);
-    drawSensor(0, SCREENHEIGHT/2, refDisp, Sensors[sensor0].slaveID, true);
     drawWarnings(SCREENWIDTH - 24, SCREENHEIGHT/2, Sensors[sensor0].slaveID, refDisp);
   } else if (Sensors[sensor0].sensetype == KTYPE) { // draw a bargraph
-    drawSensor(0, 0, refDisp, sensor0, true);
-    drawBarGraph(refDisp, sensor0);
+    if ((Sensors[sensor0].sensevals != Sensors[sensor0].senselastvals) || rotated == 1) {
+      drawSensor(0, 0, refDisp, sensor0, true);
+      drawBarGraph(refDisp, sensor0);
+    }
     drawWarnings(SCREENWIDTH - 24, 0, sensor0, refDisp);
   } else if (Sensors[sensor0].sensetype == BOOST3BAR) { // draw a vertical bargraph
-    drawSensor(32, (SCREENHEIGHT/2)-16, refDisp, sensor0, true);
-    drawVBarGraph(refDisp, sensor0);
+    if ((Sensors[sensor0].sensevals != Sensors[sensor0].senselastvals) || rotated == 1) {
+      drawSensor(32, (SCREENHEIGHT/2)-16, refDisp, sensor0, true);
+      drawVBarGraph(refDisp, sensor0);
+    }
     drawWarnings(SCREENWIDTH - 24, 0, sensor0, refDisp);
-  } else {
-    drawBIG(refDisp, sensor0);
+  } else { // default
+    if ((Sensors[sensor0].sensevals != Sensors[sensor0].senselastvals) || rotated == 1) drawBIG(refDisp, sensor0);
     drawWarnings(0, SCREENHEIGHT - 2 - 24, sensor0, refDisp);
   }
   SCREEN_DISPLAY();

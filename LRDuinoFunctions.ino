@@ -1,4 +1,43 @@
 
+void initOBD(void) {
+  td5.init();
+  if(!td5.connectToEcu(false)) {  
+    disableOBDSensors();
+  } else {
+    enableOBDSensors();
+    getSensecount();
+  }
+}
+
+void enableOBDSensors(void) {
+  for(uint8_t i=0; i < totalsensors; i++ )  {
+    if (Sensors[i].sensetype == OBD ) {
+      if (Sensors[i].warnstatus == true) { // already disabled so set warnstatus to true - we'll use this as temp storage so we don't re-enable if OBD gets re-initialised
+        Sensors[i].senseactive = false; // should already be false but no harm in making sure
+        Sensors[i].warnstatus = false;
+      } else {
+        Sensors[i].senseactive = true;
+        Sensors[i].warnstatus = false;
+      }
+    }
+  }
+}
+
+void disableOBDSensors(void) {
+  for(uint8_t i=0; i < totalsensors; i++ )  {
+    if (Sensors[i].sensetype == OBD ) {
+      if (Sensors[i].senseactive == false) { // already disabled so set warnstatus to true - we'll use this as temp storage so we don't re-enable if OBD gets re-initialised
+        Sensors[i].senseactive = false;
+        Sensors[i].warnstatus = true;
+      } else {
+        Sensors[i].senseactive = false;
+        Sensors[i].warnstatus = false;
+      }
+    }
+  }
+getSensecount();
+}
+
 void getSensecount(void)
 {
   sensecount = 0;
@@ -7,90 +46,6 @@ void getSensecount(void)
       sensecount++;
     }
   }
-}
-
-void toggleDatalog(void)
-{
-  // do some SD stuff.
-  if (sd_present && dataLog) {
-    if (sd_present) {
-      char file_name[] = "data_00.csv";
-      // if name exists, create new filename
-      for (int i = 0; i < 100; i++) {
-        file_name[5] = i / 10 + '0';
-        file_name[6] = i % 10 + '0';
-
-#if defined HAS_SDIO
-        if (SD.open(file_name)) {
-#else
-        if (sdLogFile.open(file_name, O_CREAT | O_EXCL | O_WRITE)) {
-#endif
-          break;
-        }
-      }
-
-#if defined HAS_SDIO
-      if (sdLogFile == SD.open(file_name, FILE_WRITE)) {
-#else
-      if (sdLogFile.isOpen()) {
-#endif
-        sdLogFile.println("LRDuino data Log file"); sdLogFile.println();
-        sdLogFile.print(Sensors[0].sensename); sdLogFile.print(";");
-        sdLogFile.print(Sensors[1].sensename); sdLogFile.print(";");
-        sdLogFile.print(Sensors[2].sensename); sdLogFile.print(";");
-        sdLogFile.print(Sensors[3].sensename); sdLogFile.print(";");
-        sdLogFile.print(Sensors[4].sensename); sdLogFile.print(";");
-        sdLogFile.print(Sensors[5].sensename); sdLogFile.print(";");
-        sdLogFile.print(Sensors[6].sensename); sdLogFile.print(";");
-        sdLogFile.print(Sensors[7].sensename); sdLogFile.print(";");
-        sdLogFile.print(Sensors[8].sensename); sdLogFile.print(";");
-        sdLogFile.print(Sensors[9].sensename); sdLogFile.print(";");
-        sdLogFile.print(Sensors[10].sensename); sdLogFile.print(";");
-        sdLogFile.print(Sensors[11].sensename); sdLogFile.print(";");
-        sdLogFile.print(Sensors[12].sensename); sdLogFile.println(";");
-      } else { //file open failed
-        dataLog = false;
-        //Serial.println("failed to open file");
-      }
-    }
-
-    // open the file and write the header
-  } else if (sd_present && !dataLog) {
-    // close the file
-#if defined HAS_SDIO
-    if (sdLogFile) {
-#else
-    if (sdLogFile.isOpen()) {
-#endif
-      sdLogFile.close();
-    }
-  }
-}
-
-void writeDatalogline(void)
-{
-  // write a line to the datalog
-#if defined HAS_SDIO
-  if (sdLogFile) {
-    // TODO - fix conversion of int to char for STM32SD.h
-  }
-#else
-  if (sdLogFile.isOpen()) {
-    sdLogFile.print(Sensors[0].sensevals); sdLogFile.print(";");
-    sdLogFile.print(Sensors[1].sensevals); sdLogFile.print(";");
-    sdLogFile.print(Sensors[2].sensevals); sdLogFile.print(";");
-    sdLogFile.print(Sensors[3].sensevals); sdLogFile.print(";");
-    sdLogFile.print(Sensors[4].sensevals); sdLogFile.print(";");
-    sdLogFile.print(Sensors[5].sensevals); sdLogFile.print(";");
-    sdLogFile.print(Sensors[6].sensevals); sdLogFile.print(";");
-    sdLogFile.print(Sensors[7].sensevals); sdLogFile.print(";");
-    sdLogFile.print(Sensors[8].sensevals); sdLogFile.print(";");
-    sdLogFile.print(Sensors[9].sensevals); sdLogFile.print(";");
-    sdLogFile.print(Sensors[10].sensevals); sdLogFile.print(";");
-    sdLogFile.print(Sensors[11].sensevals); sdLogFile.print(";");
-    sdLogFile.print(Sensors[12].sensevals); sdLogFile.println(";");
-  }
-#endif
 }
 
 bool processHiLo(uint8_t sensor, bool toggle)
@@ -179,11 +134,11 @@ String getUnits(uint8_t sensor)   // returns the units associated with the senso
     case 4:
       return ("rpm");
     case 5:
-      return ("mph");
+      return ("mgh");
     case 6:
-      return ("g/m");
+      return ("kph");
     case 7:
-      return ("V");
+      return ("lpC");
   }
   return ("");
 }
@@ -251,4 +206,64 @@ int processConstraints(int constraint, int checkval, int retval, uint8_t index) 
     Sensors[index].sensefault = 0; // no fault
   }
   return (retval);
+}
+
+void readSensor(int currentsensor)
+{
+  Sensors[currentsensor].senselastvals = Sensors[currentsensor].sensevals; // stash the previous value
+  switch (Sensors[currentsensor].sensetype) { // switch based upon the sensor type
+    case ERR2081  :
+      Sensors[currentsensor].sensevals = readERR2081(Sensors[currentsensor].sensepin, currentsensor);
+      break; //optional
+    case KTYPE  :
+      Sensors[currentsensor].sensevals = readMAX(currentsensor); // no pin supplied since this is over SPI
+      break; //optional
+    case BOOST3BAR  :
+      Sensors[currentsensor].sensevals = readBoost(Sensors[currentsensor].sensepin, currentsensor);
+      break; //optional
+    case CH100PSI  :
+      Sensors[currentsensor].sensevals = readPress(Sensors[currentsensor].sensepin, currentsensor);
+      break; //optional
+    case EARTHSW  :
+      Sensors[currentsensor].sensevals = readCoolantLevel(Sensors[currentsensor].sensepin, currentsensor);
+      break; //optional
+    case OBD  :
+      if (td5.ecuIsConnected()) {
+        switch(Sensors[currentsensor].sensepin) { // if it's OBD switch based upon the PID
+          case OBDRPM  :
+            if(td5.getPid(&pidRPM) > 0) {
+              Sensors[currentsensor].sensevals = pidRPM.getlValue(); // RPM
+            }
+          break;
+          case OBDINJ  :
+            if(td5.getPid(&pidFuelling) > 0) {
+              Sensors[currentsensor].sensevals = pidFuelling.getfValue(6); // Injection Quantity
+          }
+          break;
+          case OBDSPD  :
+            if(td5.getPid(&pidVehicleSpeed) > 0) {
+              Sensors[currentsensor].sensevals = pidVehicleSpeed.getbValue(0); // Speed
+          }
+          break;
+          case OBDCON  :
+            if((td5.getPid(&pidVehicleSpeed) > 0)  && (td5.getPid(&pidFuelling) > 0) && (td5.getPid(&pidRPM) > 0)) {
+              int spd = pidVehicleSpeed.getbValue(0); // Speed
+              float inj = pidFuelling.getfValue(6);
+              int rpm = pidRPM.getlValue();
+              float kgh = (inj * rpm * (5/2) * 60) / 1000000;   //injq*rpm*(5/2)*60/1000000
+              float lphk;
+              if (spd != 0) { // avoid divide by zero condition
+                lphk = (100/spd) * (kgh * 0.85); 
+              } else {
+                lphk = 0;
+              }
+              Sensors[currentsensor].sensevals = int(lphk); //stash the computed value
+          }
+          break;
+        } // OBD PID switch
+      } // if ECU is connected
+    break; //optional
+    } // Sensor type switch
+    processPeak(currentsensor);  // update the highest value if it's been exceeded - useful for graphs.
+    audibleWARN(currentsensor);  // issue tones if there's an issue
 }
