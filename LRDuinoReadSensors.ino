@@ -38,7 +38,6 @@ int readBoost(uint8_t sensor, uint8_t index)
   
   // process any faults
   // Sensors should be connected with a 10K / 20K pulldown dividor to map the 5v output to 3.3v
-  Serial.println(rawval);
   return (processConstraints(DIVISOR / 100, rawval, int(boost), index));
 }
 

@@ -109,7 +109,7 @@ unsigned long inptimeoutMillis = 0;
 void setup()
 {
   //start serial connection
-  Serial.begin(57600);  //uncomment to send serial debug info
+  //Serial.begin(57600);  //uncomment to send serial debug info
   
 #if defined ENCODER
   clickEncoder = new ClickEncoder(LEFTBUT, RIGHTBUT, SELBUT, 2);
