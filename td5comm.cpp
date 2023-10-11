@@ -70,7 +70,7 @@ Td5Pid pidInitFrame(INIT_FRAME, 5, 5);
 Td5Pid pidStartDiag(START_DIAG, 4, 3);
 Td5Pid pidRequestSeed(REQ_SEED, 4, 6);
 Td5Pid pidSendKey(SEND_KEY, 6, 4);
-Td5Pid pidRPM(ENGINE_RPM, 4, 6, 250);
+Td5Pid pidRPM(ENGINE_RPM, 4, 6, 100); //250
 Td5Pid pidTurboPressureMaf(INLET_PRES_MAF, 4, 12, 300);
 Td5Pid pidTemperatures(TEMPERATURES, 4, 20, 1000);
 Td5Pid pidBatteryVoltage(BATTERY_VOLT, 4, 8, 1500);
@@ -80,7 +80,7 @@ Td5Pid pidKeepAlive(KEEP_ALIVE, 4, 3, KEEP_ALIVE_TIME);
 Td5Pid pidFaultCodes(FAULT_CODES, 4, 39);
 Td5Pid pidResetFaults(CLEAR_FAULTS, 22, 4);
 Td5Pid pidInjectorsBalance(INJ_BALANCE, 4, 14, 500);
-Td5Pid pidVehicleSpeed(VEHICLE_SPEED, 4, 5, 1000);
+Td5Pid pidVehicleSpeed(VEHICLE_SPEED, 4, 5, 100); //1000
 Td5Pid pidThrottlePosition(THROTTLE_POS, 4, 14, 500);
 Td5Pid pidRPMError(RPM_ERROR, 4, 6, 1000);
 Td5Pid pidEGR(EGR_MOD, 4, 6, 1000);
@@ -630,33 +630,33 @@ float Td5Pid::getfValue(byte index)
       value = (uint16_t)((responseFrame[3 + (index * 2)] * 256L) + responseFrame[4 + (index * 2)]);
       return ((float) value / 1000.0);
     case FUELLING:   // 1/10000 bar
-      value = (uint16_t)((responseFrame[3 + (index * 2)] * 256L) + responseFrame[4 + (index * 2)]);
+      value = (uint16_t)((responseFrame[3 + (index)] * 256L) + responseFrame[4 + (index)]); // fixed a bug in luca72's code here, index was being multiplied by 2 which meant the wrong values were being returned - may need correcting for other non tested PIDs
       switch(index)
       {
         case 0:
         case 1:
-          return ((float) value / 100.0);    
+          return ((float) value / 100.0); // Driver Demand   
         case 2:
         case 3:
-          return ((float) value / 100.0);
+          return ((float) value / 100.0); // MafAirmass
         case 4:
         case 5:
-          return ((float) value / 10.0);    
+          return ((float) value / 10.0);  // MapAirMass
         case 6:
         case 7:
-          return ((float) value / 100.0);
+          return ((float) value / 100.0); // Injection Quantity
         case 8:
         case 9:
-          return ((float) value / 100.0);    
+          return ((float) value / 100.0); // AfRatio
         case 10:
         case 11:
-          return ((float) value / 100.0);
+          return ((float) value / 100.0); // TorqueLimit
         case 12:
         case 13:
-          return ((float) value / 100.0);    
+          return ((float) value / 100.0); // SmokeLimit
         case 14:
         case 15:
-          return ((float) value / 100.0);                               
+          return ((float) value / 100.0); // IdleDemand                              
       }
 
     default: // return value incompatible with this pid

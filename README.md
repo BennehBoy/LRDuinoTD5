@@ -7,7 +7,7 @@ Latest release no longer supports Roger Clarke's STM32 core -> https://github.co
 
 The project has been simplified to remove some bloat, data loggins, menus, roll meter & animations, etc.
 
-I'm currently working on a fuel consumption gauge - this is WIP in the moment but should provide litres per 100k or MPG output - trip based only.
+Working fuel consumption guage in Litres per 100K.
 
 You can use buttons or a rotary encoder for input, only 1 button is really requried, but with 2 you can go forward or backward through the sensors.  #define ENCODER to use a rotary encoder.  Place a copy of the supplied encoder folder and contents in your arduino libraries folder.
 
@@ -18,7 +18,7 @@ You can use buttons or a rotary encoder for input, only 1 button is really requr
 * L9637D or ECU Emulator wired up appropriately - will function without either
 * supported microcontroller, see below.
 
-### Latest version (0.19) can be used with
+### Latest version (0.20) can be used with
 * Maple Mini (or clone)
 * Blue Pill
 * Black Pill

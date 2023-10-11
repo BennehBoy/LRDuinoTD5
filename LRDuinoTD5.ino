@@ -20,8 +20,8 @@ SPIClass SPI_2(PB15, PB14, PB13); // Max31856  on MOSI, MISO, CLK - SPI2 on F1, 
 #endif
 
 // uncommment the define that matches your display type
-//#define USE_SSD1306
-#define USE_SSD1331
+#define USE_SSD1306
+//#define USE_SSD1331
 //#define USE_SSD1351
 
 #include <Adafruit_GFX.h>

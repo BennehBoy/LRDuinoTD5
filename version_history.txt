@@ -1,3 +1,8 @@
+Version 0.20
+Fixed bug in td5comm.cpp which meant incorrect values were being used for injection quantity
+Reduced minimum poll intervals for ODB PIDs related to fuel consumption - the previous values had meant that the code could not query RPM, Speed, Inj quantity in one screen refresh period - resulting in a zero value output.
+Tidied up the fuel consumption code to introduce 55ms delay between PID polls (as expected by the ECU).
+
 Version 0.18-0.19
 Removed Menus
 Removed ESP support

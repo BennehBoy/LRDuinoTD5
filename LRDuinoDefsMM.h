@@ -4,7 +4,7 @@
 #define LRDuinoDefsMM_h
 
 #define NUM_DISPLAYS 1
-#define INTERVAL  250
+#define INTERVAL    500
 #define BUT_DELAY   100
 #define MAX_DEPTH   3
 #define DIVISOR     4095

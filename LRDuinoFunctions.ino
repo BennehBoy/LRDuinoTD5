@@ -246,19 +246,36 @@ void readSensor(int currentsensor)
           }
           break;
           case OBDCON  :
-            if((td5.getPid(&pidVehicleSpeed) > 0)  && (td5.getPid(&pidFuelling) > 0) && (td5.getPid(&pidRPM) > 0)) {
-              int spd = pidVehicleSpeed.getbValue(0); // Speed
-              float inj = pidFuelling.getfValue(6);
-              int rpm = pidRPM.getlValue();
-              float kgh = (inj * rpm * (5/2) * 60) / 1000000;   //injq*rpm*(5/2)*60/1000000
-              float lphk;
-              if (spd != 0) { // avoid divide by zero condition
-                lphk = (100/spd) * (kgh * 0.85); 
-              } else {
-                lphk = 0;
-              }
-              Sensors[currentsensor].sensevals = int(lphk); //stash the computed value
-          }
+            int spd=0;
+            float inj=0;
+            int rpm=0;
+            if(td5.getPid(&pidVehicleSpeed) > 0) {
+              spd = pidVehicleSpeed.getbValue(0); // Speed
+            } 
+
+            delay(55);
+
+            if (td5.getPid(&pidRPM) > 0) {
+              rpm = pidRPM.getlValue();
+            }
+
+            delay(55);
+
+            if (td5.getPid(&pidFuelling) > 0) {
+              inj = pidFuelling.getfValue(6);
+            }
+
+            delay(55);
+            
+            float kgh = (inj * rpm * (5/2) * 60) / 1000000;   //injq*rpm*(5/2)*60/1000000
+            float lphk;
+            if (spd != 0) { // avoid divide by zero condition
+              lphk = (100/spd) * (kgh * 0.85); 
+            } else {
+              lphk = 0;
+            }
+            Sensors[currentsensor].sensevals = int(lphk); //stash the computed value
+          
           break;
         } // OBD PID switch
       } // if ECU is connected
